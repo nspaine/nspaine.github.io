@@ -1,0 +1,62 @@
+@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;700;900&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --bg-primary: #050505;
+  --bg-secondary: #0a0a0a;
+  --text-primary: #ffffff;
+  --text-secondary: #d4af37;
+  --accent-color: #ffd700;
+  /* Gold */
+  --accent-glow: 0 0 20px rgba(255, 215, 0, 0.3);
+  --circuit-line: rgba(255, 215, 0, 0.15);
+  --card-bg: rgba(10, 10, 10, 0.85);
+  --glass-border: 1px solid rgba(255, 215, 0, 0.3);
+
+  --font-main: 'Orbitron', 'Inter', system-ui, sans-serif;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+/* Ensure global reset */
+html,
+body,
+#root {
+  height: 100%;
+  width: 100%;
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+}
+
+body {
+  background: radial-gradient(circle at center, #1a1a1a 0%, #000000 100%);
+  color: var(--text-primary);
+  font-family: var(--font-main);
+}
+
+#root {
+  display: flex;
+  flex-direction: column;
+}
+
+.glass-panel {
+  background: var(--card-bg);
+  /* Solid fallback for stability */
+  border: var(--glass-border);
+  box-shadow: 0 0 25px rgba(0, 0, 0, 0.7);
+  /* Force GPU layer */
+  transform: translateZ(0);
+  will-change: transform;
+}
+
+.text-shadow {
+  text-shadow: 0 0 10px rgba(0, 0, 0, 0.8);
+}
