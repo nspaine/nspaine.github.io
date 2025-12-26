@@ -76,8 +76,10 @@ const CircuitryBackground = () => {
             constructor(x, y, canvasWidth) {
                 this.x = x;
                 this.y = y;
-                // Responsive velocity: Scale speed with screen width
-                const scale = Math.max(0.4, Math.min(1.0, canvasWidth / 1200));
+                // Improved mobile scaling: favor larger particles on mobile
+                // Mobile gets 0.8-1.2x, desktop gets 1.0-1.5x
+                const baseScale = canvasWidth < 768 ? 1.0 : Math.min(1.5, canvasWidth / 1200);
+                const scale = Math.max(0.8, baseScale);
 
                 // Random initial velocity
                 const angle = Math.random() * Math.PI * 2;
@@ -87,7 +89,6 @@ const CircuitryBackground = () => {
                 this.life = 1.0;
                 // Extended life: Decay ~0.0025.
                 // At 60fps, 1.0/0.0025 = 400 frames = ~6.6 seconds of max life (if no collision death)
-                // This ensures they travel a significant distance (dictated by screen scale)
                 this.decay = Math.random() * 0.002 + 0.0015;
                 this.history = [{ x, y }];
                 this.scale = scale; // Store for reflection logic
@@ -128,20 +129,27 @@ const CircuitryBackground = () => {
             }
 
             draw(ctx) {
+                // Draw glow first (larger, softer)
+                ctx.shadowBlur = 8 * this.scale;
+                ctx.shadowColor = `rgba(255, 215, 0, ${this.life * 0.8})`;
+
                 ctx.beginPath();
                 ctx.moveTo(this.history[0].x, this.history[0].y);
                 for (let i = 1; i < this.history.length; i++) {
                     ctx.lineTo(this.history[i].x, this.history[i].y);
                 }
                 ctx.strokeStyle = `rgba(255, 255, 255, ${this.life})`; // Bright white core
-                ctx.lineWidth = 2 * this.scale; // Responsive line width
+                ctx.lineWidth = 3 * this.scale; // Increased from 2 to 3
                 ctx.stroke();
 
-                // Head
+                // Head with stronger glow
                 ctx.beginPath();
-                ctx.arc(this.x, this.y, 1.5 * this.scale, 0, Math.PI * 2); // Responsive radius
+                ctx.arc(this.x, this.y, 2.5 * this.scale, 0, Math.PI * 2); // Increased from 1.5 to 2.5
                 ctx.fillStyle = `rgba(255, 230, 100, ${this.life})`; // Brighter Gold/Yellow
                 ctx.fill();
+
+                // Reset shadow
+                ctx.shadowBlur = 0;
             }
         }
 
@@ -149,21 +157,25 @@ const CircuitryBackground = () => {
             // Semi-clear for trail effect? Or full clear
             context.clearRect(0, 0, canvas.width, canvas.height);
 
+            // Performance: Limit total particles
+            const MAX_PARTICLES = 200;
+
             // Spawn particles if mouse is moving AND recently active (within 0.1s)
             const isRecent = Date.now() - (mouseRef.current.lastInteraction || 0) < 100;
             const isHolding = mouseRef.current.mouseDown;
 
             if (mouseRef.current.active && (isRecent || isHolding) && imageData) {
                 if (isConductive(mouseRef.current.x, mouseRef.current.y)) {
-                    // Spawn flow
-                    for (let i = 0; i < 5; i++) {
+                    // Spawn flow (reduced from 5 to 3 for performance)
+                    const spawnCount = particlesRef.current.length < MAX_PARTICLES ? 3 : 0;
+                    for (let i = 0; i < spawnCount; i++) {
                         particlesRef.current.push(new Particle(mouseRef.current.x, mouseRef.current.y, canvas.width));
                     }
                 }
             }
 
             // Global ambient flow (Random sparks across the screen)
-            if (imageData && Math.random() < 0.3) { // 30% chance per frame to spawn a random particle
+            if (imageData && Math.random() < 0.3 && particlesRef.current.length < MAX_PARTICLES) { // 30% chance per frame to spawn a random particle
                 const rx = Math.random() * canvas.width;
                 const ry = Math.random() * canvas.height;
                 if (isConductive(rx, ry)) {
