@@ -9,7 +9,7 @@ const Architecture = () => <div className="p-20 text-center text-4xl">Architectu
 
 function App() {
   return (
-    <BrowserRouter>
+    <BrowserRouter basename={import.meta.env.BASE_URL}>
       <Layout>
         <Routes>
           <Route path="/" element={<Home />} />
