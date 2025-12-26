@@ -6,6 +6,7 @@ import profileImg from '../assets/profile-pixel.jpg';
 
 const Home = () => {
     const navigate = useNavigate();
+    const [imageLoaded, setImageLoaded] = React.useState(false);
 
     return (
         // Responsive Flexbox: Row layout on all screens (modified for mobile compactness)
@@ -28,7 +29,7 @@ const Home = () => {
             </div>
 
             {/* 2. CENTER COLUMN: Profile Card */}
-            <div className="shrink-0 relative z-50 px-2">
+            <div className="shrink-0 relative z-[100] px-2">
                 <div className="bg-black/70 p-3 md:p-14 rounded-2xl text-center w-full shadow-[0_0_50px_rgba(255,215,0,0.15)] backdrop-blur-sm">
                     <div className="w-20 h-20 md:w-48 md:h-48 mx-auto rounded-full overflow-hidden border-2 border-[var(--accent-color)] mb-2 md:mb-6 shadow-[0_0_30px_rgba(255,215,0,0.3)] bg-neutral-900 flex items-center justify-center">
                         <img
@@ -36,6 +37,9 @@ const Home = () => {
                             alt="Nigel Paine"
                             className="w-full h-full object-cover select-none pointer-events-none"
                             draggable="false"
+                            loading="eager"
+                            onLoad={() => setImageLoaded(true)}
+                            style={{ opacity: imageLoaded ? 1 : 0, transition: 'opacity 0.3s' }}
                         />
                     </div>
 
