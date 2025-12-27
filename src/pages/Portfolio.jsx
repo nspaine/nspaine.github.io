@@ -26,7 +26,7 @@ const Portfolio = () => {
                 {/* Header Navigation - Home Icon Only */}
                 <button
                     onClick={() => navigate('/')}
-                    className="fixed top-6 left-6 md:left-10 z-50 p-3 rounded-full bg-black/50 border border-[var(--accent-color)] text-[var(--accent-color)] hover:bg-[var(--accent-color)] hover:text-black transition-all duration-300 hover:scale-110 shadow-[0_0_15px_rgba(255,215,0,0.3)]"
+                    className="fixed top-6 left-6 md:left-1/2 md:-translate-x-1/2 z-50 p-3 rounded-full bg-black/50 border border-[var(--accent-color)] text-[var(--accent-color)] hover:bg-[var(--accent-color)] hover:text-black transition-all duration-300 hover:scale-110 shadow-[0_0_15px_rgba(255,215,0,0.3)]"
                 >
                     <Home size={24} />
                 </button>
@@ -38,8 +38,8 @@ const Portfolio = () => {
                 {/* We place this absolutely continuously down the page using a fixed height container logic or just relative to the flow */}
                 <div className="relative pb-32">
                     {/* Continuous Central Trace */}
-                    {/* -top-44 = 11rem (6rem padding + 5rem spacer) to reach the very top of the page */}
-                    <div className="absolute -top-44 bottom-0 left-8 md:left-1/2 w-1 -translate-x-1/2 bg-[#FFD700] shadow-[0_0_10px_#FFD700] z-0 rounded-b-full" />
+                    {/* -top-102px = Starts below the fixed header button (approx 74px from top) */}
+                    <div className="absolute top-[-102px] bottom-0 left-8 md:left-1/2 w-1 -translate-x-1/2 bg-[#FFD700] shadow-[0_0_10px_#FFD700] z-0 rounded-b-full" />
 
                     {/* Circuit Nodes Loop */}
                     {projects.map((project, index) => (
