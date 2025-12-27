@@ -19,7 +19,7 @@ const CircuitNode = ({ project, index, isLast }) => {
 
     return (
         <motion.div
-            className={`flex w-full ${isEven ? 'flex-row' : 'flex-row-reverse'} justify-between relative mb-12 md:mb-20`}
+            className={`flex w-full ${isEven ? 'md:flex-row' : 'md:flex-row-reverse'} relative mb-12 md:mb-20 md:justify-between`}
             initial="hidden"
             whileInView="visible"
             viewport={{ once: true, margin: "-100px" }}
@@ -32,16 +32,18 @@ const CircuitNode = ({ project, index, isLast }) => {
 
             {/* NODE DOT (Junction Point on Central Bus) */}
             <div
-                className={`absolute left-1/2 top-8 w-4 h-4 -translate-x-1/2 rounded-full border-2 border-[var(--accent-color)] bg-black shadow-[0_0_10px_var(--accent-color)] z-20 transition-transform duration-300 ${isHovered ? 'scale-125' : ''}`}
+                className={`absolute left-8 md:left-1/2 top-8 w-4 h-4 -translate-x-1/2 rounded-full border-2 border-[var(--accent-color)] bg-black shadow-[0_0_10px_var(--accent-color)] z-20 transition-transform duration-300 ${isHovered ? 'scale-125' : ''}`}
             />
 
-            {/* NODE CONNECTION LINE (Mobile & Desktop) - Branching Trace from Center to Card */}
-            {/* Spans the 10% gap between center (50%) and card start (40%/60%) */}
+            {/* NODE CONNECTION LINE (Desktop) - Branching Trace from Center to Card */}
             <div className={`absolute top-9 left-1/2 h-[2px] bg-[#FFD700] shadow-[0_0_8px_#FFD700]
                 ${isEven ? 'origin-left' : '-translate-x-full origin-right'}
                 w-[10%]
                 z-0 hidden md:block`}
             />
+
+            {/* NODE CONNECTION LINE (Mobile) - Short trace from left-aligned bus to card */}
+            <div className="absolute top-9 left-8 w-8 h-[2px] bg-[#FFD700] shadow-[0_0_8px_#FFD700] z-0 md:hidden origin-left" />
 
             {/* CONTENT CARD */}
             <motion.div
