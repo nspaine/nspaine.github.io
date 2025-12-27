@@ -22,24 +22,23 @@ const Portfolio = () => {
 
     return (
         <div ref={containerRef} className="w-full h-full overflow-y-auto relative scrollbar-custom">
-            <div className="pt-24 px-4 md:px-20 max-w-7xl mx-auto min-h-full relative">
-                {/* Header Navigation - Home Icon Only */}
-                <button
-                    onClick={() => navigate('/')}
-                    className="fixed top-6 left-6 md:left-1/2 md:-translate-x-1/2 z-50 p-3 rounded-full bg-black/50 border border-[var(--accent-color)] text-[var(--accent-color)] hover:bg-[var(--accent-color)] hover:text-black transition-all duration-300 hover:scale-110 shadow-[0_0_15px_rgba(255,215,0,0.3)]"
-                >
-                    <Home size={24} />
-                </button>
-
-                {/* Spacer for where header used to be */}
-                <div className="h-20"></div>
+            <div className="px-4 md:px-20 max-w-7xl mx-auto min-h-full relative">
+                {/* Sticky Header Navigation */}
+                <div className="sticky top-0 z-50 pt-6 pb-6 w-full flex justify-start md:justify-center pointer-events-none">
+                    <button
+                        onClick={() => navigate('/')}
+                        className="pointer-events-auto ml-[7px] md:ml-0 p-3 rounded-full bg-black border border-[var(--accent-color)] text-[var(--accent-color)] hover:bg-[var(--accent-color)] hover:text-black transition-all duration-300 hover:scale-110 shadow-[0_0_15px_rgba(255,215,0,0.3)]"
+                    >
+                        <Home size={24} />
+                    </button>
+                </div>
 
                 {/* MAIN CIRCUIT BUS (Vertical Line) */}
                 {/* We place this absolutely continuously down the page using a fixed height container logic or just relative to the flow */}
                 <div className="relative pb-32">
                     {/* Continuous Central Trace */}
-                    {/* -top-102px = Starts below the fixed header button (approx 74px from top) */}
-                    <div className="absolute top-[-102px] bottom-0 left-8 md:left-1/2 w-1 -translate-x-1/2 bg-[#FFD700] shadow-[0_0_10px_#FFD700] z-0 rounded-b-full" />
+                    {/* -top-6 overlaps the pb-6 header padding to touch the button */}
+                    <div className="absolute -top-6 bottom-0 left-8 md:left-1/2 w-1 -translate-x-1/2 bg-[#FFD700] shadow-[0_0_10px_#FFD700] z-0 rounded-b-full" />
 
                     {/* Circuit Nodes Loop */}
                     {projects.map((project, index) => (
