@@ -19,7 +19,7 @@ const CircuitNode = ({ project, index, isLast }) => {
 
     return (
         <motion.div
-            className={`flex w-full ${isEven ? 'md:flex-row' : 'md:flex-row-reverse'} relative mb-12 md:mb-20 md:justify-between`}
+            className={`flex w-full ${isEven ? 'md:flex-row' : 'md:flex-row-reverse'} relative mb-12 md:mb-12 md:justify-between ${index > 0 ? 'md:-mt-40' : ''}`}
             initial="hidden"
             whileInView="visible"
             viewport={{ once: true, margin: "-100px" }}
@@ -84,7 +84,7 @@ const CircuitNode = ({ project, index, isLast }) => {
                             {project.icon}
                         </div>
                         <div className="flex-grow min-w-0">
-                            <h3 className="text-xl md:text-2xl font-bold font-[Orbitron] text-zinc-100 truncate">
+                            <h3 className="text-xl md:text-2xl font-bold font-[Orbitron] text-zinc-100">
                                 {project.title}
                             </h3>
                             <div className={`flex items-center text-xs text-[var(--text-secondary)] gap-2 mt-1 ${isEven ? 'md:justify-end' : ''}`}>
@@ -104,24 +104,21 @@ const CircuitNode = ({ project, index, isLast }) => {
                         </div>
                     </div>
 
-                    {/* Short Description (Always visible) */}
-                    <div className={`mt-4 text-sm text-[var(--text-secondary)] leading-relaxed ${isEven ? 'md:text-right' : 'md:text-left'}`}>
-                        {project.description}
-                    </div>
-
-                    {/* Tech Stack Preview (Collapsed) */}
-                    <div className={`mt-4 flex flex-wrap gap-2 ${isEven ? 'md:justify-end' : ''}`}>
-                        {project.tech.slice(0, 3).map((t, i) => (
-                            <span key={i} className="text-[10px] font-mono px-2 py-1 rounded bg-black/50 border border-[var(--glass-border)] text-zinc-400">
-                                {t}
-                            </span>
-                        ))}
-                        {project.tech.length > 3 && (
-                            <span className="text-[10px] font-mono px-2 py-1 text-zinc-500">
-                                +{project.tech.length - 3}
-                            </span>
-                        )}
-                    </div>
+                    {/* Tech Stack Preview (Collapsed) - Only visible when NOT expanded */}
+                    {!isExpanded && (
+                        <div className={`mt-4 flex flex-wrap gap-2 ${isEven ? 'md:justify-end' : ''}`}>
+                            {project.tech.slice(0, 3).map((t, i) => (
+                                <span key={i} className="text-[10px] font-mono px-2 py-1 rounded bg-black/50 border border-[var(--glass-border)] text-zinc-400">
+                                    {t}
+                                </span>
+                            ))}
+                            {project.tech.length > 3 && (
+                                <span className="text-[10px] font-mono px-2 py-1 text-zinc-500">
+                                    +{project.tech.length - 3}
+                                </span>
+                            )}
+                        </div>
+                    )}
 
                     {/* EXPANDED CONTENT */}
                     <AnimatePresence>
@@ -133,14 +130,8 @@ const CircuitNode = ({ project, index, isLast }) => {
                                 className="overflow-hidden"
                             >
                                 <div className="pt-6 mt-6 border-t border-[var(--glass-border)]">
-                                    <p className={`text-zinc-300 text-sm leading-7 mb-6 ${isEven ? 'md:text-right' : 'md:text-left'}`}>
-                                        {project.fullDescription}
-                                    </p>
 
-                                    {/* Full Tech Stack */}
-                                    <h4 className={`text-[var(--accent-color)] text-xs uppercase tracking-widest font-bold mb-3 ${isEven ? 'md:text-right' : 'md:text-left'}`}>
-                                        Technologies
-                                    </h4>
+                                    {/* Full Tech Stack (No Label) */}
                                     <div className={`flex flex-wrap gap-2 mb-6 ${isEven ? 'md:justify-end' : ''}`}>
                                         {project.tech.map((t, i) => (
                                             <span key={i} className="text-xs font-mono px-2 py-1 rounded bg-[var(--bg-secondary)] border border-[var(--glass-border)] text-[var(--text-secondary)]">
@@ -149,13 +140,20 @@ const CircuitNode = ({ project, index, isLast }) => {
                                         ))}
                                     </div>
 
+                                    {/* Full Description */}
+                                    <p className={`text-zinc-300 text-sm leading-7 mb-6 ${isEven ? 'md:text-right' : 'md:text-left'}`}>
+                                        {project.fullDescription}
+                                    </p>
+
                                     {/* Actions */}
-                                    <div className={`flex gap-3 ${isEven ? 'md:justify-end' : ''}`}>
-                                        <a href={project.link} className="flex items-center gap-2 px-4 py-2 rounded-lg bg-[var(--accent-color)] text-black font-bold text-sm hover:bg-yellow-400 transition-colors">
-                                            <ExternalLink size={16} />
-                                            View Project
-                                        </a>
-                                    </div>
+                                    {project.link && (
+                                        <div className={`flex gap-3 ${isEven ? 'md:justify-end' : ''}`}>
+                                            <a href={project.link} className="flex items-center gap-2 px-4 py-2 rounded-lg bg-[var(--accent-color)] text-black font-bold text-sm hover:bg-yellow-400 transition-colors">
+                                                <ExternalLink size={16} />
+                                                View Project
+                                            </a>
+                                        </div>
+                                    )}
                                 </div>
                             </motion.div>
                         )}

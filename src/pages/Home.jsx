@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { Linkedin, ChevronLeft, ChevronRight, User, Building2, Cpu } from 'lucide-react';
 import Footer from '../components/Layout/Footer';
 
-import profileImg from '../assets/profile-pixel.jpg';
+import profileImg from '../assets/profile-pixel.webp';
 
 const Home = () => {
     const navigate = useNavigate();

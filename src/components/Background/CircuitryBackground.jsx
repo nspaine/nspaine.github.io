@@ -1,5 +1,5 @@
 import React, { useEffect, useRef } from 'react';
-import pcbBg from '../../assets/pcb-background.jpg';
+import pcbBg from '../../assets/pcb-background.webp';
 
 const CircuitryBackground = () => {
     const canvasRef = useRef(null);

@@ -2,7 +2,7 @@ import React from 'react';
 import { useLocation } from 'react-router-dom';
 import { Cpu } from 'lucide-react';
 import CircuitryBackground from '../Background/CircuitryBackground';
-import profileImg from '../../assets/profile-pixel.jpg';
+import profileImg from '../../assets/profile-pixel.webp';
 
 const Layout = ({ children }) => {
     const location = useLocation();
