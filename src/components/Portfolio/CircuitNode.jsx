@@ -13,7 +13,7 @@ const CircuitNode = ({ project, index, isLast }) => {
         visible: {
             opacity: 1,
             scale: 1,
-            transition: { duration: 0.5, delay: index * 0.1 }
+            transition: { duration: 0.25, delay: index * 0.05 }
         }
     };
 
@@ -79,7 +79,7 @@ const CircuitNode = ({ project, index, isLast }) => {
                     </div>
 
                     {/* Header: Icon + Title */}
-                    <div className={`flex items-center gap-4 ${isEven ? 'md:flex-row-reverse' : 'flex-row'}`}>
+                    <div className={`flex items-center gap-4 mb-2 ${isEven ? 'md:flex-row-reverse' : 'flex-row'}`}>
                         <div className="p-3 rounded-lg bg-[var(--bg-secondary)] border border-[var(--glass-border)] text-[var(--accent-color)] shrink-0">
                             {project.icon}
                         </div>
@@ -87,20 +87,47 @@ const CircuitNode = ({ project, index, isLast }) => {
                             <h3 className="text-xl md:text-2xl font-bold font-[Orbitron] text-zinc-100">
                                 {project.title}
                             </h3>
-                            <div className={`flex items-center text-xs text-[var(--text-secondary)] gap-2 mt-1 ${isEven ? 'md:justify-end' : ''}`}>
+                            {/* Desktop Meta (Inside Header) */}
+                            <div className={`hidden md:flex items-center text-xs text-[var(--text-secondary)] gap-1.5 mt-2 ${isEven ? 'md:justify-end' : ''}`}>
+                                {/* Toggle Arrow (Left for Right-Side Cards) */}
+                                {isEven && (
+                                    <div className={`transition-transform duration-300 ${isExpanded ? 'rotate-180' : ''} text-[var(--text-secondary)] mr-2`}>
+                                        <ChevronDown size={14} />
+                                    </div>
+                                )}
+
                                 <span className="px-2 py-0.5 rounded-full border border-[var(--text-secondary)]/30">
                                     {project.year}
                                 </span>
-                                <span className="hidden sm:inline-block">•</span>
-                                <span className="hidden sm:inline-block font-mono tracking-wider uppercase">
+                                <span className="inline-block mx-1 text-[var(--text-secondary)]/50">•</span>
+                                <span className="font-mono tracking-wider uppercase text-[10px] md:text-xs whitespace-nowrap">
                                     {project.status}
                                 </span>
+
+                                {/* Toggle Arrow (Right for Left-Side Cards) */}
+                                {!isEven && (
+                                    <div className={`transition-transform duration-300 ${isExpanded ? 'rotate-180' : ''} text-[var(--text-secondary)] ml-2`}>
+                                        <ChevronDown size={14} />
+                                    </div>
+                                )}
                             </div>
                         </div>
+                    </div>
 
-                        {/* Expand Toggle Icon */}
+                    {/* Mobile Meta (Outside Header) */}
+                    <div className={`flex md:hidden items-center justify-between text-xs text-[var(--text-secondary)] mb-4`}>
+                        <div className="flex items-center gap-1.5">
+                            <span className="px-2 py-0.5 rounded-full border border-[var(--text-secondary)]/30">
+                                {project.year}
+                            </span>
+                            <span className="inline-block mx-1 text-[var(--text-secondary)]/50">•</span>
+                            <span className="font-mono tracking-wider uppercase text-[10px] md:text-xs whitespace-nowrap">
+                                {project.status}
+                            </span>
+                        </div>
+                        {/* Toggle Arrow (Always Right on Mobile) */}
                         <div className={`transition-transform duration-300 ${isExpanded ? 'rotate-180' : ''} text-[var(--text-secondary)]`}>
-                            <ChevronDown />
+                            <ChevronDown size={16} />
                         </div>
                     </div>
 
@@ -141,7 +168,7 @@ const CircuitNode = ({ project, index, isLast }) => {
                                     </div>
 
                                     {/* Full Description */}
-                                    <p className={`text-zinc-300 text-sm leading-7 mb-6 ${isEven ? 'md:text-right' : 'md:text-left'}`}>
+                                    <p className={`text-zinc-300 font-mono text-xs md:text-sm leading-6 mb-6 ${isEven ? 'md:text-right' : 'md:text-left'}`}>
                                         {project.fullDescription}
                                     </p>
 

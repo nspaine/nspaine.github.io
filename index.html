@@ -6,10 +6,53 @@
   <link rel="icon" type="image/svg+xml" href="/vite.svg" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>personal-website</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;700;900&display=block" rel="stylesheet">
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      background-color: #050505;
+      overflow: hidden;
+    }
+
+    @keyframes squareWave {
+      0% {
+        transform: translateX(0);
+      }
+
+      100% {
+        transform: translateX(-50%);
+      }
+    }
+
+    .loader-wave {
+      animation: squareWave 2s linear infinite;
+    }
+  </style>
 </head>
 
 <body>
-  <div id="root"></div>
+  <div id="root">
+    <!-- Critical Loading Screen (Visible immediately) -->
+    <div
+      style="position: absolute; inset: 0; background-color: #050505; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 1.5rem; z-index: 9999;">
+      <div style="width: 16rem; height: 8rem; overflow: hidden; position: relative;">
+        <svg class="loader-wave" viewBox="0 0 400 100" preserveAspectRatio="none"
+          style="width: 200%; height: 100%; display: block;">
+          <path
+            d="M0,80 L0,20 L50,20 L50,80 L100,80 L100,20 L150,20 L150,80 L200,80 L200,20 L250,20 L250,80 L300,80 L300,20 L350,20 L350,80 L400,80"
+            fill="none" stroke="#FFD700" stroke-width="3" stroke-linecap="square"
+            style="filter: drop-shadow(0 0 8px rgba(255, 215, 0, 0.6));" />
+        </svg>
+      </div>
+      <p
+        style="color: #FFD700; font-size: 0.875rem; letter-spacing: 0.3em; font-family: 'Orbitron', sans-serif; text-transform: uppercase; margin: 0;">
+        ANALYZING SIGNALS...
+      </p>
+    </div>
+  </div>
   <script type="module" src="/src/main.jsx"></script>
 </body>
 
