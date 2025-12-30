@@ -13,7 +13,7 @@ const CircuitNode = ({ project, index, isLast }) => {
         visible: {
             opacity: 1,
             scale: 1,
-            transition: { duration: 0.25, delay: index * 0.05 }
+            transition: { duration: 0.25, delay: Math.min(index * 0.05, 0.2) }
         }
     };
 

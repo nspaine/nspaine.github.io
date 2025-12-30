@@ -34,10 +34,13 @@
 </head>
 
 <body>
-  <div id="root">
-    <!-- Critical Loading Screen (Visible immediately) -->
-    <div
-      style="position: absolute; inset: 0; background-color: #050505; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 1.5rem; z-index: 9999;">
+  <!-- Critical Loading Screen (Outside #root to survive hydration) -->
+
+  <div id="initial-loader"
+    style="position: fixed; inset: 0; background-color: #050505; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 1.5rem; z-index: 99999; transition: opacity 0.5s ease-out;">
+
+    <!-- Home Loader Content -->
+    <div id="loader-home" style="display: none; flex-direction: column; align-items: center; gap: 1.5rem;">
       <div style="width: 16rem; height: 8rem; overflow: hidden; position: relative;">
         <svg class="loader-wave" viewBox="0 0 400 100" preserveAspectRatio="none"
           style="width: 200%; height: 100%; display: block;">
@@ -48,11 +51,92 @@
         </svg>
       </div>
       <p
-        style="color: #FFD700; font-size: 0.875rem; letter-spacing: 0.3em; font-family: 'Orbitron', sans-serif; text-transform: uppercase; margin: 0;">
+        style="color: #FFD700; font-size: 0.875rem; letter-spacing: 0.3em; font-family: 'Orbitron', monospace; font-weight: 700; text-transform: uppercase; margin: 0;">
         ANALYZING SIGNALS...
       </p>
     </div>
+
+    <!-- Portfolio Loader Content -->
+    <div id="loader-portfolio"
+      style="display: none; align-items: center; justify-content: center; width: 100%; height: 100%;">
+      <canvas id="binary-canvas"
+        style="position: absolute; inset: 0; width: 100%; height: 100%; opacity: 0.8;"></canvas>
+      <div
+        style="position: relative; z-index: 10; display: flex; flex-direction: column; align-items: center; gap: 1rem;">
+        <p
+          style="color: #FFD700; font-size: 0.875rem; letter-spacing: 0.2em; font-family: 'Orbitron', monospace; font-weight: 700; text-transform: uppercase; margin: 0; animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;">
+          DOWNLOADING BYTES...
+        </p>
+      </div>
+      <style>
+        @keyframes pulse {
+
+          0%,
+          100% {
+            opacity: 1;
+          }
+
+          50% {
+            opacity: 0.5;
+          }
+        }
+      </style>
+    </div>
+
+    <!-- Router Logic for Initial Loader -->
+    <script>
+      (function () {
+        const homeLoader = document.getElementById('loader-home');
+        const portfolioLoader = document.getElementById('loader-portfolio');
+
+        if (window.location.pathname.includes('/portfolio')) {
+          portfolioLoader.style.display = 'flex';
+
+          // Initialize Matrix Rain for Portfolio
+          const canvas = document.getElementById('binary-canvas');
+          const ctx = canvas.getContext('2d');
+
+          // Resize
+          const resize = () => {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+          };
+          window.addEventListener('resize', resize);
+          resize();
+
+          // Config
+          const fontSize = 14;
+          const columns = Math.ceil(canvas.width / fontSize);
+          const drops = Array(columns).fill(1).map(() => Math.random() * -100);
+
+          function draw() {
+            ctx.fillStyle = 'rgba(5, 5, 5, 0.1)';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            ctx.fillStyle = '#FFD700';
+            ctx.font = fontSize + "px 'Courier New', monospace";
+
+            for (let i = 0; i < drops.length; i++) {
+              const text = Math.random() > 0.5 ? '1' : '0';
+              ctx.fillText(text, i * fontSize, drops[i] * fontSize);
+
+              if (drops[i] * fontSize > canvas.height && Math.random() > 0.975) {
+                drops[i] = 0;
+              }
+              drops[i]++;
+            }
+            requestAnimationFrame(draw);
+          }
+          draw();
+
+        } else {
+          homeLoader.style.display = 'flex';
+        }
+      })();
+    </script>
   </div>
+
+  <div id="root"></div>
   <script type="module" src="/src/main.jsx"></script>
 </body>
 
