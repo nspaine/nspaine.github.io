@@ -1,6 +1,13 @@
-import React from 'react';
+import React, { useEffect } from 'react';
+import { useLoader } from '../Layout/Layout';
 
 const HomeLoader = () => {
+    const { startMinTimer } = useLoader();
+
+    useEffect(() => {
+        startMinTimer();
+    }, []);
+
     return (
         <div className="fixed inset-0 z-[99999] bg-[#050505] flex flex-col items-center justify-center gap-6">
             <div className="w-64 h-32 overflow-hidden relative">

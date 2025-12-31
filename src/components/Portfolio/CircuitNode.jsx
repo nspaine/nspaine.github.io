@@ -4,7 +4,6 @@ import { ChevronDown, ExternalLink, Code } from 'lucide-react';
 
 const CircuitNode = ({ project, index, isLast }) => {
     const [isExpanded, setIsExpanded] = useState(false);
-    const [isHovered, setIsHovered] = useState(false);
     const isEven = index % 2 === 0;
 
     // Animation variants
@@ -19,10 +18,10 @@ const CircuitNode = ({ project, index, isLast }) => {
 
     return (
         <motion.div
-            className={`flex w-full ${isEven ? 'md:flex-row' : 'md:flex-row-reverse'} relative mb-12 md:mb-12 md:justify-between ${index > 0 ? 'md:-mt-40' : ''}`}
+            className={`flex w-full ${isEven ? 'md:flex-row' : 'md:flex-row-reverse'} relative mb-12 md:mb-12 3xl:mb-32 md:justify-between ${index > 0 ? 'md:-mt-40 3xl:-mt-48' : ''} group`}
             initial="hidden"
             whileInView="visible"
-            viewport={{ once: true, margin: "-100px" }}
+            viewport={{ once: true, margin: "-20px" }}
         >
             {/* CENTRAL BUS LINE SEGMENT - REMOVED (Handled by parent for continuity) */}
 
@@ -32,7 +31,7 @@ const CircuitNode = ({ project, index, isLast }) => {
 
             {/* NODE DOT (Junction Point on Central Bus) */}
             <div
-                className={`absolute left-8 md:left-1/2 top-8 w-4 h-4 -translate-x-1/2 rounded-full border-2 border-[var(--accent-color)] bg-black shadow-[0_0_10px_var(--accent-color)] z-20 transition-transform duration-300 ${isHovered ? 'scale-125' : ''}`}
+                className={`absolute left-8 md:left-1/2 top-8 w-4 h-4 -translate-x-1/2 rounded-full border-2 border-[var(--accent-color)] bg-black shadow-[0_0_10px_var(--accent-color)] z-20 transition-transform duration-300 group-hover:scale-125`}
             />
 
             {/* NODE CONNECTION LINE (Desktop) - Branching Trace from Center to Card */}
@@ -49,17 +48,16 @@ const CircuitNode = ({ project, index, isLast }) => {
             <motion.div
                 variants={nodeVariants}
                 className={`w-full md:w-[40%] z-10 pl-16 pr-4 md:px-0 group ${isEven ? 'md:text-right' : 'md:text-left'} text-left`}
-                onMouseEnter={() => setIsHovered(true)}
-                onMouseLeave={() => setIsHovered(false)}
             >
 
                 {/* THE CARD ITSELF */}
                 <div
                     className={`
-                        p-6 rounded-xl backdrop-blur-md 
+                        p-6 3xl:p-10 rounded-xl bg-black/90
                         shadow-[0_0_15px_rgba(0,0,0,0.5)]
                         hover:shadow-[0_0_25px_var(--accent-color-dim)]
-                        transition-all duration-300 cursor-pointer
+                        transition-[box-shadow,border-color] duration-300 cursor-pointer
+                        [contain:paint]
                         overflow-hidden
                     `}
                     onClick={() => setIsExpanded(!isExpanded)}
@@ -69,7 +67,7 @@ const CircuitNode = ({ project, index, isLast }) => {
                 >
 
                     {/* Project Image Preview */}
-                    <div className="w-full h-40 mb-6 rounded-lg overflow-hidden border border-[var(--glass-border)] relative group-hover:border-[var(--accent-color)]/50 transition-colors">
+                    <div className="w-full h-40 3xl:h-72 mb-6 3xl:mb-8 rounded-lg overflow-hidden border border-[var(--glass-border)] relative group-hover:border-[var(--accent-color)]/50 transition-colors">
                         <img
                             src={project.image}
                             alt={project.title}
@@ -79,16 +77,16 @@ const CircuitNode = ({ project, index, isLast }) => {
                     </div>
 
                     {/* Header: Icon + Title */}
-                    <div className={`flex items-center gap-4 mb-2 ${isEven ? 'md:flex-row-reverse' : 'flex-row'}`}>
-                        <div className="p-3 rounded-lg bg-[var(--bg-secondary)] border border-[var(--glass-border)] text-[var(--accent-color)] shrink-0">
+                    <div className={`flex items-center gap-4 mb-2 3xl:mb-4 ${isEven ? 'md:flex-row-reverse' : 'flex-row'}`}>
+                        <div className="p-3 3xl:p-4 rounded-lg bg-[var(--bg-secondary)] border border-[var(--glass-border)] text-[var(--accent-color)] shrink-0">
                             {project.icon}
                         </div>
                         <div className="flex-grow min-w-0">
-                            <h3 className="text-xl md:text-2xl font-bold font-[Orbitron] text-zinc-100">
+                            <h3 className="text-xl md:text-2xl 3xl:text-4xl font-bold font-[Orbitron] text-zinc-100">
                                 {project.title}
                             </h3>
                             {/* Desktop Meta (Inside Header) */}
-                            <div className={`hidden md:flex items-center text-xs text-[var(--text-secondary)] gap-1.5 mt-2 ${isEven ? 'md:justify-end' : ''}`}>
+                            <div className={`hidden md:flex items-center text-xs 3xl:text-base text-[var(--text-secondary)] gap-1.5 3xl:gap-3 mt-2 ${isEven ? 'md:justify-end' : ''}`}>
                                 {/* Toggle Arrow (Left for Right-Side Cards) */}
                                 {isEven && (
                                     <div className={`transition-transform duration-300 ${isExpanded ? 'rotate-180' : ''} text-[var(--text-secondary)] mr-2`}>
@@ -135,7 +133,7 @@ const CircuitNode = ({ project, index, isLast }) => {
                     {!isExpanded && (
                         <div className={`mt-4 flex flex-wrap gap-2 ${isEven ? 'md:justify-end' : ''}`}>
                             {project.tech.slice(0, 3).map((t, i) => (
-                                <span key={i} className="text-[10px] font-mono px-2 py-1 rounded bg-black/50 border border-[var(--glass-border)] text-zinc-400">
+                                <span key={i} className="text-[10px] 3xl:text-sm font-mono px-2 py-1 rounded bg-black/50 border border-[var(--glass-border)] text-zinc-400">
                                     {t}
                                 </span>
                             ))}
@@ -161,14 +159,14 @@ const CircuitNode = ({ project, index, isLast }) => {
                                     {/* Full Tech Stack (No Label) */}
                                     <div className={`flex flex-wrap gap-2 mb-6 ${isEven ? 'md:justify-end' : ''}`}>
                                         {project.tech.map((t, i) => (
-                                            <span key={i} className="text-xs font-mono px-2 py-1 rounded bg-[var(--bg-secondary)] border border-[var(--glass-border)] text-[var(--text-secondary)]">
+                                            <span key={i} className="text-xs 3xl:text-sm font-mono px-2 py-1 rounded bg-[var(--bg-secondary)] border border-[var(--glass-border)] text-[var(--text-secondary)]">
                                                 {t}
                                             </span>
                                         ))}
                                     </div>
 
                                     {/* Full Description */}
-                                    <p className={`text-zinc-300 font-mono text-xs md:text-sm leading-6 mb-6 ${isEven ? 'md:text-right' : 'md:text-left'}`}>
+                                    <p className={`text-zinc-300 font-mono text-xs md:text-sm 3xl:text-lg leading-6 3xl:leading-8 mb-6 ${isEven ? 'md:text-right' : 'md:text-left'}`}>
                                         {project.fullDescription}
                                     </p>
 

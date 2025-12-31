@@ -1,28 +1,55 @@
-import React, { useRef } from 'react';
-import { motion, useScroll, useSpring } from 'framer-motion';
+import React, { useRef, useLayoutEffect } from 'react';
 import { ArrowLeft, Home } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import CircuitNode from '../components/Portfolio/CircuitNode';
 import { projects } from '../data/projects.jsx';
 import Footer from '../components/Layout/Footer';
+import { useLoader } from '../components/Layout/Layout';
 
 const Portfolio = () => {
     const navigate = useNavigate();
+    const { setAreAssetsLoaded } = useLoader();
     const containerRef = useRef(null);
-    const { scrollYProgress } = useScroll({
-        container: containerRef,
-        offset: ["start start", "end end"]
-    });
 
-    const scaleX = useSpring(scrollYProgress, {
-        stiffness: 100,
-        damping: 30,
-        restDelta: 0.001
-    });
+    // Asset Preload Logic
+    useLayoutEffect(() => {
+        // 1. Lock Loader Immediately to ensure no gaps
+        setAreAssetsLoaded(false);
+
+        const preloadImages = async () => {
+            if (!projects || projects.length === 0) {
+                setAreAssetsLoaded(true);
+                return;
+            }
+
+            const imagePromises = projects.map(project => {
+                const img = new Image();
+                img.src = project.image;
+                // Use decode() to ensure image is ready to paint (prevents pop-in)
+                return img.decode().catch(() => {
+                    // If decode fails, resolve anyway to avoid blocking
+                    return Promise.resolve();
+                });
+            });
+
+            // Safety Timeout: Unlock after 10s max to allow for slow connections but prevent total hang
+            const timeoutPromise = new Promise(resolve => setTimeout(resolve, 10000));
+
+            await Promise.race([Promise.all(imagePromises), timeoutPromise]);
+
+            // Stabilization Buffer: Wait an extra 500ms to allow DOM paint/layout to settle
+            await new Promise(resolve => setTimeout(resolve, 500));
+
+            // 3. Release Loader
+            setAreAssetsLoaded(true);
+        };
+
+        preloadImages();
+    }, [setAreAssetsLoaded]);
 
     return (
         <div ref={containerRef} className="w-full h-full overflow-y-auto relative scrollbar-custom">
-            <div className="px-4 md:px-20 max-w-7xl mx-auto min-h-full relative">
+            <div className="px-4 md:px-20 max-w-7xl 3xl:max-w-[1800px] mx-auto min-h-full relative">
                 {/* Sticky Header Navigation */}
                 <div className="sticky top-0 z-50 pt-6 pb-6 w-full flex justify-start md:justify-center pointer-events-none">
                     <button
@@ -59,15 +86,11 @@ const Portfolio = () => {
                 <div className="mt-20">
                     <Footer />
                 </div>
-
-                {/* PROGRESS BAR (Optional - Side fixed) */}
-                <motion.div
-                    className="fixed top-0 left-0 right-0 h-1 bg-[var(--accent-color)] origin-left z-50 mix-blend-screen"
-                    style={{ scaleX }}
-                />
             </div>
         </div>
 
+    );
+};
     );
 };
 

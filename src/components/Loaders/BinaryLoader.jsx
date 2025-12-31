@@ -1,50 +1,104 @@
 import React, { useEffect, useRef } from 'react';
+import { useLoader } from '../Layout/Layout';
+// Import Worker using Vite's suffix syntax
+import MatrixWorker from './matrix.worker.js?worker';
 
 const BinaryLoader = () => {
     const canvasRef = useRef(null);
+    const { startMinTimer } = useLoader();
 
     useEffect(() => {
+        startMinTimer();
         const canvas = canvasRef.current;
-        const ctx = canvas.getContext('2d');
+        let worker;
         let animationFrameId;
 
-        const resizeCanvas = () => {
+        // --- RESIZE HANDLER ---
+        const handleResize = () => {
+            if (worker) {
+                worker.postMessage({
+                    type: 'RESIZE',
+                    payload: { width: window.innerWidth, height: window.innerHeight }
+                });
+            } else if (canvas && !worker) {
+                // Main thread resize (Fallback case)
+                canvas.width = window.innerWidth;
+                canvas.height = window.innerHeight;
+            }
+        };
+
+        // --- WEB WORKER IMPLEMENTATION (OffscreenCanvas) ---
+        if (canvas.transferControlToOffscreen) {
+            try {
+                const offscreen = canvas.transferControlToOffscreen();
+                worker = new MatrixWorker();
+                worker.postMessage({
+                    type: 'INIT',
+                    payload: {
+                        canvas: offscreen,
+                        width: window.innerWidth,
+                        height: window.innerHeight
+                    }
+                }, [offscreen]); // Transfer ownership
+            } catch (e) {
+                console.warn("Worker init failed, falling back to main thread:", e);
+                // Fallback logic below will catch if worker remains undefined
+            }
+        }
+
+        // --- MAIN THREAD FALLBACK (If OffscreenCanvas not supported) ---
+        if (!worker) {
+            const ctx = canvas.getContext('2d');
             canvas.width = window.innerWidth;
             canvas.height = window.innerHeight;
-        };
-        window.addEventListener('resize', resizeCanvas);
-        resizeCanvas();
 
-        // Binary Stream Config
-        const fontSize = 14;
-        const columns = Math.ceil(canvas.width / fontSize);
-        const drops = Array(columns).fill(1).map(() => Math.random() * -100); // Random start positions
+            // Binary Stream Config
+            const fontSize = 14;
+            let columns = Math.ceil(canvas.width / fontSize);
+            let drops = Array(columns).fill(1).map(() => Math.random() * -100);
 
-        const draw = () => {
-            // Semi-transparent black fill for trail effect
-            ctx.fillStyle = 'rgba(5, 5, 5, 0.1)';
-            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            // Re-calc columns on manual resize if worker didn't take over
+            const manualResize = () => {
+                canvas.width = window.innerWidth;
+                canvas.height = window.innerHeight;
+                columns = Math.ceil(canvas.width / fontSize);
+                drops = Array(columns).fill(1).map(() => Math.random() * -100);
+            };
+            window.addEventListener('resize', manualResize);
 
-            ctx.fillStyle = '#FFD700'; // Gold
-            ctx.font = `${fontSize}px 'Courier New', monospace`;
+            const draw = () => {
+                ctx.fillStyle = 'rgba(5, 5, 5, 0.1)';
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+                ctx.fillStyle = '#FFD700'; // Gold
+                ctx.font = `${fontSize}px 'Courier New', monospace`;
 
-            for (let i = 0; i < drops.length; i++) {
-                const text = Math.random() > 0.5 ? '1' : '0';
-                ctx.fillText(text, i * fontSize, drops[i] * fontSize);
-
-                if (drops[i] * fontSize > canvas.height && Math.random() > 0.975) {
-                    drops[i] = 0;
+                for (let i = 0; i < drops.length; i++) {
+                    const text = Math.random() > 0.5 ? '1' : '0';
+                    ctx.fillText(text, i * fontSize, drops[i] * fontSize);
+                    if (drops[i] * fontSize > canvas.height && Math.random() > 0.975) {
+                        drops[i] = 0;
+                    }
+                    drops[i]++;
                 }
-                drops[i]++;
-            }
-            animationFrameId = requestAnimationFrame(draw);
-        };
+                animationFrameId = requestAnimationFrame(draw);
+            };
+            draw();
 
-        draw();
+            // Cleanup for fallback
+            return () => {
+                window.removeEventListener('resize', manualResize);
+                cancelAnimationFrame(animationFrameId);
+            };
+        }
+
+        // --- GENERAL CLEANUP ---
+        window.addEventListener('resize', handleResize);
 
         return () => {
-            window.removeEventListener('resize', resizeCanvas);
-            cancelAnimationFrame(animationFrameId);
+            window.removeEventListener('resize', handleResize);
+            if (worker) {
+                worker.terminate();
+            }
         };
     }, []);
 

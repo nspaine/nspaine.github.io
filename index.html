@@ -92,42 +92,119 @@
         if (window.location.pathname.includes('/portfolio')) {
           portfolioLoader.style.display = 'flex';
 
-          // Initialize Matrix Rain for Portfolio
           const canvas = document.getElementById('binary-canvas');
-          const ctx = canvas.getContext('2d');
 
-          // Resize
-          const resize = () => {
-            canvas.width = window.innerWidth;
-            canvas.height = window.innerHeight;
-          };
-          window.addEventListener('resize', resize);
-          resize();
+          // --- INLINE WORKER FOR ZERO BOOT LAG ---
+          // Runs the animation off-main-thread while React hydrates
+          if (canvas.transferControlToOffscreen) {
+            const offscreen = canvas.transferControlToOffscreen();
 
-          // Config
-          const fontSize = 14;
-          const columns = Math.ceil(canvas.width / fontSize);
-          const drops = Array(columns).fill(1).map(() => Math.random() * -100);
+            const workerCode = `
+              let ctx;
+              let width, height;
+              let columns;
+              let drops;
+              let fontSize = 14;
 
-          function draw() {
-            ctx.fillStyle = 'rgba(5, 5, 5, 0.1)';
-            ctx.fillRect(0, 0, canvas.width, canvas.height);
+              self.onmessage = function(e) {
+                const { type, payload } = e.data;
+                if (type === 'INIT') {
+                  const canvas = payload.canvas;
+                  ctx = canvas.getContext('2d');
+                  width = payload.width;
+                  height = payload.height;
+                  resize();
+                  loop();
+                } else if (type === 'RESIZE') {
+                  width = payload.width;
+                  height = payload.height;
+                  resize();
+                }
+              };
 
-            ctx.fillStyle = '#FFD700';
-            ctx.font = fontSize + "px 'Courier New', monospace";
+              function resize() {
+                if(!width) return;
+                // Fix: Update internal canvas buffer size!
+                const canvas = ctx.canvas;
+                canvas.width = width;
+                canvas.height = height;
 
-            for (let i = 0; i < drops.length; i++) {
-              const text = Math.random() > 0.5 ? '1' : '0';
-              ctx.fillText(text, i * fontSize, drops[i] * fontSize);
-
-              if (drops[i] * fontSize > canvas.height && Math.random() > 0.975) {
-                drops[i] = 0;
+                // Re-calc columns
+                columns = Math.ceil(width / fontSize);
+                if(!drops || drops.length !== columns) {
+                   drops = Array(columns).fill(1).map(() => Math.random() * -100);
+                }
               }
-              drops[i]++;
+
+              function loop() {
+                ctx.fillStyle = 'rgba(5, 5, 5, 0.1)';
+                ctx.fillRect(0, 0, width, height);
+                ctx.fillStyle = '#FFD700';
+                ctx.font = fontSize + "px 'Courier New', monospace";
+
+                for (let i = 0; i < drops.length; i++) {
+                  const text = Math.random() > 0.5 ? '1' : '0';
+                  ctx.fillText(text, i * fontSize, drops[i] * fontSize);
+                  if (drops[i] * fontSize > height && Math.random() > 0.975) {
+                    drops[i] = 0;
+                  }
+                  drops[i]++;
+                }
+                requestAnimationFrame(loop);
+              }
+            `;
+
+            const blob = new Blob([workerCode], { type: 'application/javascript' });
+            const worker = new Worker(URL.createObjectURL(blob));
+
+            worker.postMessage({
+              type: 'INIT',
+              payload: {
+                canvas: offscreen,
+                width: window.innerWidth,
+                height: window.innerHeight
+              }
+            }, [offscreen]);
+
+            window.addEventListener('resize', () => {
+              worker.postMessage({
+                type: 'RESIZE',
+                payload: { width: window.innerWidth, height: window.innerHeight }
+              });
+            });
+
+          } else {
+            // Fallback for Safari/Legacy (Main Thread)
+            const ctx = canvas.getContext('2d');
+            const resize = () => {
+              canvas.width = window.innerWidth;
+              canvas.height = window.innerHeight;
+            };
+            window.addEventListener('resize', resize);
+            resize();
+
+            const fontSize = 14;
+            let columns = Math.ceil(canvas.width / fontSize);
+            let drops = Array(columns).fill(1).map(() => Math.random() * -100);
+
+            function draw() {
+              ctx.fillStyle = 'rgba(5, 5, 5, 0.1)';
+              ctx.fillRect(0, 0, canvas.width, canvas.height);
+              ctx.fillStyle = '#FFD700';
+              ctx.font = fontSize + "px 'Courier New', monospace";
+
+              for (let i = 0; i < drops.length; i++) {
+                const text = Math.random() > 0.5 ? '1' : '0';
+                ctx.fillText(text, i * fontSize, drops[i] * fontSize);
+                if (drops[i] * fontSize > canvas.height && Math.random() > 0.975) {
+                  drops[i] = 0;
+                }
+                drops[i]++;
+              }
+              requestAnimationFrame(draw);
             }
-            requestAnimationFrame(draw);
+            draw();
           }
-          draw();
 
         } else {
           homeLoader.style.display = 'flex';

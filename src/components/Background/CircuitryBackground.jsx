@@ -1,14 +1,19 @@
 import React, { useEffect, useRef } from 'react';
 import pcbBg from '../../assets/pcb-background.webp';
+import { useLoader } from '../Layout/Layout'; // Import Context hook
 
 const CircuitryBackground = () => {
+    const { setAreAssetsLoaded } = useLoader(); // Consume context
     const canvasRef = useRef(null);
     const containerRef = useRef(null);
     const mouseRef = useRef({ x: -1000, y: -1000, active: false });
     const particlesRef = useRef([]);
-    const imageContextRef = useRef(null); // To store image pixel data safely
+    const imageContextRef = useRef(null);
 
     useEffect(() => {
+        // Lock Loader on Mount (regardless of Layout default, just to be safe)
+        setAreAssetsLoaded(false);
+
         const canvas = canvasRef.current;
         const context = canvas.getContext('2d');
         const container = containerRef.current;
@@ -19,7 +24,7 @@ const CircuitryBackground = () => {
 
         let animationFrameId;
         let imageData = null;
-        let scale = 1.0; // Responsive scale for boot sequence
+        let scale = 1.0;
 
         const init = () => {
             if (!container) return;
@@ -43,32 +48,22 @@ const CircuitryBackground = () => {
 
             try {
                 // Get pixel data for collision detection
-                // We optimize by not saving the whole array if not needed, but we need random access.
                 imageData = offCtx.getImageData(0, 0, offscreen.width, offscreen.height).data;
             } catch (e) {
-                console.warn("Could not load image data (likely CORS if external, but this is local)", e);
+                console.warn("Could not load image data", e);
             }
         };
 
         const isConductive = (x, y) => {
             if (!imageData) return false;
-
             const ix = Math.floor(x);
             const iy = Math.floor(y);
-
             if (ix < 0 || iy < 0 || ix >= canvas.width || iy >= canvas.height) return false;
-
-            // Index in flattened Uint8ClampedArray (RGBA)
             const index = (iy * canvas.width + ix) * 4;
-
-            // Simple brightness check: (R+G+B)/3
-            // Gold traces are usually bright (>100 or so)
             const r = imageData[index];
             const g = imageData[index + 1];
             const b = imageData[index + 2];
             const brightness = (r + g + b) / 3;
-
-            // Adjust threshold based on your specific image's contrast
             return brightness > 60;
         };
 
@@ -270,6 +265,9 @@ const CircuitryBackground = () => {
             }
 
             animate();
+
+            // Signal Ready to Layout
+            setAreAssetsLoaded(true);
         };
 
         window.addEventListener('resize', handleResize);

@@ -1,29 +1,48 @@
 import React, { Suspense, lazy } from 'react';
-import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import { createBrowserRouter, RouterProvider, Outlet } from 'react-router-dom';
 import Layout from './components/Layout/Layout';
 import Home from './pages/Home';
-
 import BinaryLoader from './components/Loaders/BinaryLoader';
 
-// Lazy load heavy components (Visual delay managed by Layout.jsx)
+// Lazy load heavy components
 const Portfolio = lazy(() => import('./pages/Portfolio'));
-
 const Architecture = () => <div className="p-20 text-center text-4xl">Architecture Gallery (Coming Soon)</div>;
 
+// Root Layout Wrapper to provide Outlet context
+const RootLayout = () => (
+  <Layout>
+    <Suspense fallback={<BinaryLoader />}>
+      <Outlet />
+    </Suspense>
+  </Layout>
+);
+
+const router = createBrowserRouter([
+  {
+    path: "/",
+    element: <RootLayout />,
+    children: [
+      {
+        index: true,
+        element: <Home />,
+      },
+      {
+        path: "portfolio",
+        loader: () => import('./pages/Portfolio').then(() => null), // Force router to wait for chunk, triggering loading state
+        element: <Portfolio />,
+      },
+      {
+        path: "architecture",
+        element: <Architecture />,
+      },
+    ],
+  },
+], {
+  basename: import.meta.env.BASE_URL
+});
+
 function App() {
-  return (
-    <BrowserRouter basename={import.meta.env.BASE_URL}>
-      <Layout>
-        <Suspense fallback={<BinaryLoader />}>
-          <Routes>
-            <Route path="/" element={<Home />} />
-            <Route path="/portfolio" element={<Portfolio />} />
-            <Route path="/architecture" element={<Architecture />} />
-          </Routes>
-        </Suspense>
-      </Layout>
-    </BrowserRouter>
-  );
+  return <RouterProvider router={router} />;
 }
 
 export default App;
