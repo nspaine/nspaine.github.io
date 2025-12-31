@@ -4,6 +4,7 @@ import CircuitryBackground from '../Background/CircuitryBackground';
 import profileImg from '../../assets/profile-pixel.webp';
 import HomeLoader from '../Loaders/HomeLoader';
 import BinaryLoader from '../Loaders/BinaryLoader';
+import ArchitectureLoader from '../Loaders/ArchitectureLoader';
 
 // Export Context for Pages to use
 export const LoaderContext = createContext({
@@ -18,6 +19,7 @@ const Layout = ({ children }) => {
     const navigation = useNavigation();
     const isHomePage = location.pathname === '/';
     const isPortfolio = location.pathname === '/portfolio';
+    const isArchitecture = location.pathname === '/architecture';
 
     // State
     const [isReady, setIsReady] = useState(false);
@@ -29,8 +31,9 @@ const Layout = ({ children }) => {
     // CRITICAL FIX: Initialize based on route. If on Portfolio OR Home, default to FALSE (Locked).
     const isRoot = location.pathname === '/';
     const isPortPage = location.pathname.includes('/portfolio');
+    const isArchPage = location.pathname.includes('/architecture');
     // Determine initial lock state: Lock if Home OR Portfolio
-    const shouldLockInitially = isPortPage || isRoot;
+    const shouldLockInitially = isPortPage || isArchPage || isRoot;
 
     const [areAssetsLoaded, setAreAssetsLoaded] = useState(() => !shouldLockInitially);
     const [minTimePassed, setMinTimePassed] = useState(false);
@@ -58,11 +61,13 @@ const Layout = ({ children }) => {
 
     // Timer Start Function (Exposed to Loaders)
     // Child Loaders call this when they MOUNT and are VISIBLE.
-    const startMinTimer = () => {
+    // Timer Start Function (Exposed to Loaders)
+    // Child Loaders call this when they MOUNT and are VISIBLE.
+    const startMinTimer = React.useCallback((duration = 2000) => {
         setTimeout(() => {
             setMinTimePassed(true);
-        }, 2000);
-    };
+        }, duration);
+    }, []);
 
     // Navigation Logic
     useLayoutEffect(() => {
@@ -87,9 +92,10 @@ const Layout = ({ children }) => {
             // Route-Specific Gate Logic
             // If going to Portfolio OR Home, LOCK the gate (false). Child component must unlock it.
             const nextPathIsPortfolio = location.pathname.includes('/portfolio');
+            const nextPathIsArchitecture = location.pathname.includes('/architecture');
             const nextPathIsHome = location.pathname === '/';
 
-            if (nextPathIsPortfolio || nextPathIsHome) {
+            if (nextPathIsPortfolio || nextPathIsArchitecture || nextPathIsHome) {
                 setAreAssetsLoaded(false);
             } else {
                 setAreAssetsLoaded(true);
@@ -132,16 +138,19 @@ const Layout = ({ children }) => {
         : location.pathname;
 
     const isTargetPortfolio = targetPath.includes('/portfolio');
+    const isTargetArchitecture = targetPath.includes('/architecture');
 
     // Determine which loader to show
-    const LoaderComponent = isTargetPortfolio ? BinaryLoader : HomeLoader;
+    let LoaderComponent = HomeLoader;
+    if (isTargetPortfolio) LoaderComponent = BinaryLoader;
+    if (isTargetArchitecture) LoaderComponent = ArchitectureLoader;
 
     return (
         <LoaderContext.Provider value={{ setAreAssetsLoaded, startMinTimer }}>
-            <div className={`h-screen w-screen relative overflow-hidden flex flex-col ${(isHomePage || isPortfolio) ? 'cursor-probe' : ''}`}>
+            <div className={`h-screen w-screen relative overflow-hidden flex flex-col ${(isHomePage || isPortfolio || isArchitecture) ? 'cursor-probe' : ''}`}>
 
                 {/* Background */}
-                {!isPortfolio && <CircuitryBackground />}
+                {(!isPortfolio && !isArchitecture) && <CircuitryBackground />}
 
                 {/* Main Content */}
                 <main className="flex-grow relative z-10 w-full h-full">

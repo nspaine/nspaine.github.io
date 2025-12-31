@@ -1,4 +1,5 @@
 import React, { useEffect } from 'react';
+import { motion } from 'framer-motion';
 import { useLoader } from '../Layout/Layout';
 
 const HomeLoader = () => {
@@ -27,9 +28,17 @@ const HomeLoader = () => {
                     />
                 </svg>
             </div>
-            <p className="text-[var(--accent-color)] text-sm tracking-[0.3em] font-[Orbitron] uppercase font-bold">
+            <motion.p
+                animate={{ opacity: [1, 0.3, 1] }}
+                transition={{
+                    duration: 1.5,
+                    ease: "easeInOut",
+                    repeat: Infinity
+                }}
+                className="text-[var(--accent-color)] text-sm tracking-[0.3em] font-[Orbitron] uppercase font-bold"
+            >
                 ANALYZING SIGNALS...
-            </p>
+            </motion.p>
         </div>
     );
 };

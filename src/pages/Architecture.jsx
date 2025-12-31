@@ -1,7 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useLayoutEffect } from 'react';
 import { motion } from 'framer-motion';
 import { ArrowLeft, ExternalLink, Image as ImageIcon } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { useLoader } from '../components/Layout/Layout';
 
 const photos = [
     { id: 1, color: "from-gray-800 to-gray-600", title: "Structural Integrity" },
@@ -14,7 +15,18 @@ const photos = [
 
 const Architecture = () => {
     const navigate = useNavigate();
+    const { setAreAssetsLoaded } = useLoader();
     const [hoveredId, setHoveredId] = useState(null);
+
+    // Asset Preload Logic (Simplified for now - unlocks immediately)
+    useLayoutEffect(() => {
+        // Unlock the loader so the page becomes visible
+        // Use a small timeout to ensure this runs strictly AFTER the Layout's navigation "Lock" effect.
+        const timer = setTimeout(() => {
+            setAreAssetsLoaded(true);
+        }, 100);
+        return () => clearTimeout(timer);
+    }, [setAreAssetsLoaded]);
 
     return (
         <div className="pt-24 px-6 md:px-20 max-w-7xl mx-auto min-h-screen">

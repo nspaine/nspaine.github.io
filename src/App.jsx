@@ -6,7 +6,7 @@ import BinaryLoader from './components/Loaders/BinaryLoader';
 
 // Lazy load heavy components
 const Portfolio = lazy(() => import('./pages/Portfolio'));
-const Architecture = () => <div className="p-20 text-center text-4xl">Architecture Gallery (Coming Soon)</div>;
+const Architecture = lazy(() => import('./pages/Architecture'));
 
 // Root Layout Wrapper to provide Outlet context
 const RootLayout = () => (
@@ -33,6 +33,7 @@ const router = createBrowserRouter([
       },
       {
         path: "architecture",
+        loader: () => import('./pages/Architecture').then(() => null), // Force router to wait for chunk, triggering loading state
         element: <Architecture />,
       },
     ],

@@ -20,7 +20,7 @@ const CircuitryBackground = () => {
 
         // Offscreen image processing
         const img = new Image();
-        img.src = pcbBg;
+        // img.src assigned at end of effect to prevent race condition
 
         let animationFrameId;
         let imageData = null;
@@ -269,6 +269,15 @@ const CircuitryBackground = () => {
             // Signal Ready to Layout
             setAreAssetsLoaded(true);
         };
+
+        // Safety error handler
+        img.onerror = () => {
+            console.warn("Background image failed to load");
+            setAreAssetsLoaded(true); // Don't block app on bg failure
+        };
+
+        // Start loading image AFTER handlers are attached to catch cached loads
+        img.src = pcbBg;
 
         window.addEventListener('resize', handleResize);
         window.addEventListener('mousemove', handleMouseMove);
