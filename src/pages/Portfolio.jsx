@@ -78,8 +78,18 @@ const Portfolio = () => {
                     ))}
 
                     {/* END TERMINATOR - Replaced by continuous line ending */}
-                    <div className="absolute bottom-0 left-8 md:left-1/2 -translate-x-1/2 translate-y-full flex flex-col items-center">
-                        <div className="w-4 h-4 rounded-full bg-[#FFD700] shadow-[0_0_15px_#FFD700] animate-pulse" />
+                    {/* END TERMINATOR - Signal Ground */}
+                    <div className="absolute bottom-0 left-8 md:left-1/2 -translate-x-1/2 translate-y-full flex flex-col items-center -mt-[2px]">
+                        <svg width="48" height="48" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="filter drop-shadow-[0_0_8px_rgba(255,215,0,0.6)]">
+                            {/* Vertical connection line */}
+                            <path d="M12 0V12" stroke="#FFD700" strokeWidth="2.5" />
+                            {/* Top horizontal line */}
+                            <path d="M4 12H20" stroke="#FFD700" strokeWidth="2.5" strokeLinecap="round" />
+                            {/* Middle horizontal line */}
+                            <path d="M7 16H17" stroke="#FFD700" strokeWidth="2.5" strokeLinecap="round" />
+                            {/* Bottom horizontal line */}
+                            <path d="M10 20H14" stroke="#FFD700" strokeWidth="2.5" strokeLinecap="round" />
+                        </svg>
                     </div>
                 </div>
 

@@ -1,8 +1,15 @@
 import React, { Suspense, lazy } from 'react';
-import { createBrowserRouter, RouterProvider, Outlet } from 'react-router-dom';
+import { createBrowserRouter, RouterProvider, Outlet, useRouteError } from 'react-router-dom';
 import Layout from './components/Layout/Layout';
 import Home from './pages/Home';
 import BinaryLoader from './components/Loaders/BinaryLoader';
+import ErrorFallback from './components/ErrorFallback';
+
+// Wrapper for ErrorFallback to passing router error
+const RouterErrorFallback = () => {
+  const error = useRouteError();
+  return <ErrorFallback error={error} resetErrorBoundary={() => window.location.reload()} />;
+};
 
 // Lazy load heavy components
 const Portfolio = lazy(() => import('./pages/Portfolio'));
@@ -21,6 +28,7 @@ const router = createBrowserRouter([
   {
     path: "/",
     element: <RootLayout />,
+    errorElement: <RouterErrorFallback />,
     children: [
       {
         index: true,

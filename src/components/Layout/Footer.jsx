@@ -9,7 +9,7 @@ const Footer = () => {
                 rel="noopener noreferrer"
                 className="inline-block bg-black/70 backdrop-blur-sm px-4 py-2 rounded-lg border border-transparent text-[var(--accent-color)] text-xs tracking-widest shadow-lg pointer-events-auto hover:bg-black/90 transition-all duration-300 hover:scale-105 active:scale-95 cursor-pointer"
             >
-                Created with Google Antigravity 🚀
+                Built with Google Antigravity 🚀
             </a>
         </footer>
     );

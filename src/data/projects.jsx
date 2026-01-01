@@ -1,23 +1,26 @@
 import React from 'react';
 import { ExternalLink, Database, Cpu, Cloud, Globe, Code, Wifi, Terminal, Layout, Share2, PenTool, Activity, FileJson, Monitor, Zap, Calendar1Icon, CalendarDaysIcon, MoveIcon, MicroscopeIcon, CircleDollarSignIcon, PaletteIcon, WavesLadderIcon, CarIcon, WallpaperIcon, CircleGaugeIcon, WaypointsIcon, TwitterIcon, FlameIcon, CpuIcon, ApertureIcon, AudioWaveformIcon, KeyboardMusicIcon } from 'lucide-react';
 
-import rustImg from '../assets/project_images/rust-network-analyzer.webp';
 import profileImg from '../assets/profile-pixel.webp';
-import azureImg from '../assets/project_images/azure-ad-migration.webp';
-import jiraImg from '../assets/project_images/ms-project-jira.webp';
-import periscopeImg from '../assets/project_images/periscope-motion.webp';
-import covidImg from '../assets/project_images/covid-analytics.webp';
-import loanImg from '../assets/project_images/student-loan-calc.webp';
-import photoImg from '../assets/project_images/photo-filter.webp';
-import poolImg from '../assets/project_images/pool-monitor.webp';
-import iotechImg from '../assets/project_images/iotech-car-hub.webp';
-import networkImg from '../assets/project_images/network-graph-theory.webp';
-import tweetImg from '../assets/project_images/markov-tweet-gen.webp';
-import fireImg from '../assets/project_images/firefighter-tracking.webp';
-import fpgaImg from '../assets/project_images/fpga-image-proc.webp';
-import thermalImg from '../assets/project_images/thermal-flow-model.webp';
-import audioImg from '../assets/project_images/audio-func-gen.webp';
-import synthImg from '../assets/project_images/arduino-synth.webp';
+
+const BASE = import.meta.env.BASE_URL;
+
+const rustImg = `${BASE}images/project_images/rust-network-analyzer.webp`;
+const azureImg = `${BASE}images/project_images/azure-ad-migration.webp`;
+const jiraImg = `${BASE}images/project_images/ms-project-jira.webp`;
+const periscopeImg = `${BASE}images/project_images/periscope-motion.webp`;
+const covidImg = `${BASE}images/project_images/covid-analytics.webp`;
+const loanImg = `${BASE}images/project_images/student-loan-calc.webp`;
+const photoImg = `${BASE}images/project_images/photo-filter.webp`;
+const poolImg = `${BASE}images/project_images/pool-monitor.webp`;
+const iotechImg = `${BASE}images/project_images/iotech-car-hub.webp`;
+const networkImg = `${BASE}images/project_images/network-graph-theory.webp`;
+const tweetImg = `${BASE}images/project_images/markov-tweet-gen.webp`;
+const fireImg = `${BASE}images/project_images/firefighter-tracking.webp`;
+const fpgaImg = `${BASE}images/project_images/fpga-image-proc.webp`;
+const thermalImg = `${BASE}images/project_images/thermal-flow-model.webp`;
+const audioImg = `${BASE}images/project_images/audio-func-gen.webp`;
+const synthImg = `${BASE}images/project_images/arduino-synth.webp`;
 
 export const projects = [
     {
