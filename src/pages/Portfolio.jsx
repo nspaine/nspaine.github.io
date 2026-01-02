@@ -63,9 +63,26 @@ const Portfolio = () => {
                 {/* MAIN CIRCUIT BUS (Vertical Line) */}
                 {/* We place this absolutely continuously down the page using a fixed height container logic or just relative to the flow */}
                 <div className="relative pb-32">
-                    {/* Continuous Central Trace */}
-                    {/* -top-6 overlaps the pb-6 header padding to touch the button */}
-                    <div className="absolute -top-6 bottom-0 left-8 md:left-1/2 w-1 -translate-x-1/2 bg-[#FFD700] shadow-[0_0_10px_#FFD700] z-0 rounded-b-full" />
+                    {/* Unified Circuit Trace & Terminator Wrapper */}
+                    <div className="absolute inset-0 pointer-events-none drop-shadow-[0_0_10px_#FFD700] z-0">
+                        {/* Continuous Central Trace */}
+                        {/* -top-6 overlaps the pb-6 header padding to touch the button */}
+                        <div className="absolute -top-6 bottom-0 left-8 md:left-1/2 w-[4px] -translate-x-1/2 bg-[#FFD700]" />
+
+                        {/* END TERMINATOR - Signal Ground */}
+                        <div className="absolute bottom-0 left-8 md:left-1/2 -translate-x-1/2 translate-y-full flex flex-col items-center -mt-[2px]">
+                            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="overflow-visible">
+                                {/* Vertical connection line - extends slightly up to ensure overlap */}
+                                <path d="M12 -2V12" stroke="#FFD700" strokeWidth="2" />
+                                {/* Top horizontal line */}
+                                <path d="M4 12H20" stroke="#FFD700" strokeWidth="2" strokeLinecap="round" />
+                                {/* Middle horizontal line */}
+                                <path d="M7 16H17" stroke="#FFD700" strokeWidth="2" strokeLinecap="round" />
+                                {/* Bottom horizontal line */}
+                                <path d="M10 20H14" stroke="#FFD700" strokeWidth="2" strokeLinecap="round" />
+                            </svg>
+                        </div>
+                    </div>
 
                     {/* Circuit Nodes Loop */}
                     {projects.map((project, index) => (
@@ -76,21 +93,6 @@ const Portfolio = () => {
                             isLast={index === projects.length - 1}
                         />
                     ))}
-
-                    {/* END TERMINATOR - Replaced by continuous line ending */}
-                    {/* END TERMINATOR - Signal Ground */}
-                    <div className="absolute bottom-0 left-8 md:left-1/2 -translate-x-1/2 translate-y-full flex flex-col items-center -mt-[2px]">
-                        <svg width="48" height="48" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="filter drop-shadow-[0_0_8px_rgba(255,215,0,0.6)]">
-                            {/* Vertical connection line */}
-                            <path d="M12 0V12" stroke="#FFD700" strokeWidth="2.5" />
-                            {/* Top horizontal line */}
-                            <path d="M4 12H20" stroke="#FFD700" strokeWidth="2.5" strokeLinecap="round" />
-                            {/* Middle horizontal line */}
-                            <path d="M7 16H17" stroke="#FFD700" strokeWidth="2.5" strokeLinecap="round" />
-                            {/* Bottom horizontal line */}
-                            <path d="M10 20H14" stroke="#FFD700" strokeWidth="2.5" strokeLinecap="round" />
-                        </svg>
-                    </div>
                 </div>
 
                 <div className="mt-20">
