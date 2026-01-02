@@ -5,6 +5,57 @@ import { useNavigate } from 'react-router-dom';
 import { useLoader } from '../components/Layout/Layout';
 import Footer from '../components/Layout/Footer';
 
+
+// Image filenames
+const imageFilenames = [
+    'Image~2.webp', 'Image~3.webp', 'PXL_20221217_204749031~2.webp',
+    'PXL_20230224_221616739~2.webp', 'PXL_20230224_231524647.webp',
+    'PXL_20230224_231548104~2.webp', 'PXL_20230615_132742527~3.webp',
+    'PXL_20230615_171002859~2.webp', 'PXL_20230820_190817904.webp',
+    'PXL_20230823_163247227.webp', 'PXL_20231209_234911689-01.webp',
+    'PXL_20240311_202043373.webp', 'PXL_20240311_202048690~3.webp',
+    'PXL_20240312_190659652~2.webp', 'PXL_20240519_173245250.webp',
+    'PXL_20240807_184452907~2.webp', 'PXL_20240807_191904432~2.webp',
+    'PXL_20240808_121018498~2.webp', 'PXL_20240808_124013650.webp',
+    'PXL_20240808_124655591~2.webp', 'PXL_20240809_092223441~3.webp',
+    'PXL_20240810_065634673.webp', 'PXL_20240810_091337394.webp',
+    'PXL_20240810_092813117~2.webp', 'PXL_20240810_094532001~2.webp',
+    'PXL_20240811_141332088.webp', 'PXL_20240811_154807741~3.webp',
+    'PXL_20240811_192512755.webp', 'PXL_20240812_094141298~2.webp',
+    'PXL_20250215_174428711~2.webp', 'PXL_20250704_204053335.MP~2.webp',
+    'PXL_20250705_213231237~2.webp', 'PXL_20250705_213854943~2.webp',
+    'PXL_20250705_232335490~2.webp', 'PXL_20250705_233147330~2.webp',
+    'PXL_20250705_234009670~2.webp', 'PXL_20250705_235947312.webp',
+    'PXL_20250706_000248312.webp', 'PXL_20250706_162337271.webp',
+    'PXL_20250706_170611324~2.webp', 'PXL_20250706_171047823.webp',
+    'PXL_20250706_171257546.webp', 'PXL_20250706_172128615~2.webp',
+    'PXL_20250706_172153148~2.webp', 'PXL_20250706_172813182.webp',
+    'PXL_20250706_173222362~2.webp', 'PXL_20250706_173231367~2.webp',
+    'PXL_20250706_182200066.webp', 'PXL_20250821_171138451~2.webp',
+    'PXL_20250821_191140603~2.webp', 'PXL_20250822_091955296~2.webp',
+    'PXL_20250822_092642867~2.webp', 'PXL_20250822_163225543.webp',
+    'PXL_20250822_172152402~2.webp', 'PXL_20250823_142022828~2.webp',
+    'PXL_20250824_090714275~2.webp', 'PXL_20250824_102438799~2.webp',
+    'PXL_20250824_111430018.webp', 'PXL_20250824_183325819.webp',
+    'PXL_20250826_134746038~2.webp', 'PXL_20250826_134846251.webp',
+    'PXL_20250828_164804723~2.webp', 'PXL_20250829_114414779.webp',
+    'PXL_20250829_120156307~2.webp', 'PXL_20250829_123341484~3.webp',
+    'PXL_20250829_144924912~2.webp', 'PXL_20250830_083930550~2.webp',
+    'PXL_20250830_113922121.webp', 'PXL_20250830_183239712~2.webp',
+    'PXL_20251025_171310690.webp', 'PXL_20251025_183557572~2.webp',
+    'PXL_20251206_192935305.webp', 'PXL_20251206_195507168.webp'
+];
+
+// Thumbnail images for gallery (800px wide, faster loading)
+const thumbnails = imageFilenames.map(filename =>
+    `${import.meta.env.BASE_URL}images/architecture/thumbs/${filename}`
+);
+
+// Full resolution images for lightbox
+const fullResImages = imageFilenames.map(filename =>
+    `${import.meta.env.BASE_URL}images/architecture/${filename}`
+);
+
 const Architecture = () => {
     const navigate = useNavigate();
     const { setAreAssetsLoaded } = useLoader();
@@ -12,55 +63,8 @@ const Architecture = () => {
     const [imageLoading, setImageLoading] = useState(false);
     const [slideDirection, setSlideDirection] = useState(0); // -1 for left, 1 for right
 
-    // Image filenames
-    const imageFilenames = [
-        'Image~2.webp', 'Image~3.webp', 'PXL_20221217_204749031~2.webp',
-        'PXL_20230224_221616739~2.webp', 'PXL_20230224_231524647.webp',
-        'PXL_20230224_231548104~2.webp', 'PXL_20230615_132742527~3.webp',
-        'PXL_20230615_171002859~2.webp', 'PXL_20230820_190817904.webp',
-        'PXL_20230823_163247227.webp', 'PXL_20231209_234911689-01.webp',
-        'PXL_20240311_202043373.webp', 'PXL_20240311_202048690~3.webp',
-        'PXL_20240312_190659652~2.webp', 'PXL_20240519_173245250.webp',
-        'PXL_20240807_184452907~2.webp', 'PXL_20240807_191904432~2.webp',
-        'PXL_20240808_121018498~2.webp', 'PXL_20240808_124013650.webp',
-        'PXL_20240808_124655591~2.webp', 'PXL_20240809_092223441~3.webp',
-        'PXL_20240810_065634673.webp', 'PXL_20240810_091337394.webp',
-        'PXL_20240810_092813117~2.webp', 'PXL_20240810_094532001~2.webp',
-        'PXL_20240811_141332088.webp', 'PXL_20240811_154807741~3.webp',
-        'PXL_20240811_192512755.webp', 'PXL_20240812_094141298~2.webp',
-        'PXL_20250215_174428711~2.webp', 'PXL_20250704_204053335.MP~2.webp',
-        'PXL_20250705_213231237~2.webp', 'PXL_20250705_213854943~2.webp',
-        'PXL_20250705_232335490~2.webp', 'PXL_20250705_233147330~2.webp',
-        'PXL_20250705_234009670~2.webp', 'PXL_20250705_235947312.webp',
-        'PXL_20250706_000248312.webp', 'PXL_20250706_162337271.webp',
-        'PXL_20250706_170611324~2.webp', 'PXL_20250706_171047823.webp',
-        'PXL_20250706_171257546.webp', 'PXL_20250706_172128615~2.webp',
-        'PXL_20250706_172153148~2.webp', 'PXL_20250706_172813182.webp',
-        'PXL_20250706_173222362~2.webp', 'PXL_20250706_173231367~2.webp',
-        'PXL_20250706_182200066.webp', 'PXL_20250821_171138451~2.webp',
-        'PXL_20250821_191140603~2.webp', 'PXL_20250822_091955296~2.webp',
-        'PXL_20250822_092642867~2.webp', 'PXL_20250822_163225543.webp',
-        'PXL_20250822_172152402~2.webp', 'PXL_20250823_142022828~2.webp',
-        'PXL_20250824_090714275~2.webp', 'PXL_20250824_102438799~2.webp',
-        'PXL_20250824_111430018.webp', 'PXL_20250824_183325819.webp',
-        'PXL_20250826_134746038~2.webp', 'PXL_20250826_134846251.webp',
-        'PXL_20250828_164804723~2.webp', 'PXL_20250829_114414779.webp',
-        'PXL_20250829_120156307~2.webp', 'PXL_20250829_123341484~3.webp',
-        'PXL_20250829_144924912~2.webp', 'PXL_20250830_083930550~2.webp',
-        'PXL_20250830_113922121.webp', 'PXL_20250830_183239712~2.webp',
-        'PXL_20251025_171310690.webp', 'PXL_20251025_183557572~2.webp',
-        'PXL_20251206_192935305.webp', 'PXL_20251206_195507168.webp'
-    ];
-
-    // Thumbnail images for gallery (800px wide, faster loading)
-    const thumbnails = imageFilenames.map(filename =>
-        `${import.meta.env.BASE_URL}images/architecture/thumbs/${filename}`
-    );
-
-    // Full resolution images for lightbox
-    const fullResImages = imageFilenames.map(filename =>
-        `${import.meta.env.BASE_URL}images/architecture/${filename}`
-    );
+    // Persistent cache to prevent GC
+    const preloadedMap = React.useRef(new Map());
 
     // Preload only first 6 thumbnails (above the fold), let others lazy load
     useLayoutEffect(() => {
@@ -89,6 +93,41 @@ const Architecture = () => {
         preloadImages();
     }, [setAreAssetsLoaded]);
 
+    const loadingTimeoutRef = React.useRef(null);
+
+    // Preload adjacent images
+    useLayoutEffect(() => {
+        if (!selectedImage) return;
+
+        const currentIndex = fullResImages.indexOf(selectedImage);
+        const nextIndex = (currentIndex + 1) % fullResImages.length;
+        const prevIndex = (currentIndex - 1 + fullResImages.length) % fullResImages.length;
+
+        const imagesToPreload = [fullResImages[nextIndex], fullResImages[prevIndex]];
+
+        imagesToPreload.forEach(src => {
+            if (!preloadedMap.current.has(src)) {
+                const img = new Image();
+                img.src = src;
+                preloadedMap.current.set(src, img);
+            }
+        });
+    }, [selectedImage]);
+
+    const handleImageChange = (newImage) => {
+        // Clear potential pending timer
+        if (loadingTimeoutRef.current) clearTimeout(loadingTimeoutRef.current);
+
+        // Optimistically treat as fast; timer will set true if slow
+        setImageLoading(false);
+
+        loadingTimeoutRef.current = setTimeout(() => {
+            setImageLoading(true);
+        }, 500);
+
+        setSelectedImage(newImage);
+    };
+
     // Keyboard navigation for lightbox
     useLayoutEffect(() => {
         if (!selectedImage) return;
@@ -104,16 +143,14 @@ const Architecture = () => {
                     document.activeElement.blur();
                 }
                 setSlideDirection(-1);
-                setImageLoading(true);
-                setSelectedImage(fullResImages[currentIndex - 1]);
+                handleImageChange(fullResImages[currentIndex - 1]);
             } else if (e.key === 'ArrowRight' && currentIndex < fullResImages.length - 1) {
                 // Blur any focused button to clear hover state
                 if (document.activeElement instanceof HTMLElement) {
                     document.activeElement.blur();
                 }
                 setSlideDirection(1);
-                setImageLoading(true);
-                setSelectedImage(fullResImages[currentIndex + 1]);
+                handleImageChange(fullResImages[currentIndex + 1]);
             }
         };
 
@@ -145,15 +182,13 @@ const Architecture = () => {
                 // Swiped left - go to next
                 if (currentIndex < fullResImages.length - 1) {
                     setSlideDirection(1);
-                    setImageLoading(true);
-                    setSelectedImage(fullResImages[currentIndex + 1]);
+                    handleImageChange(fullResImages[currentIndex + 1]);
                 }
             } else if (touchEndX - touchStartX > swipeThreshold) {
                 // Swiped right - go to previous
                 if (currentIndex > 0) {
                     setSlideDirection(-1);
-                    setImageLoading(true);
-                    setSelectedImage(fullResImages[currentIndex - 1]);
+                    handleImageChange(fullResImages[currentIndex - 1]);
                 }
             }
         };
@@ -165,6 +200,14 @@ const Architecture = () => {
             window.removeEventListener('touchend', handleTouchEnd);
         };
     }, [selectedImage, fullResImages]);
+
+    const handleImageLoad = (event) => {
+        if (loadingTimeoutRef.current) {
+            clearTimeout(loadingTimeoutRef.current);
+            loadingTimeoutRef.current = null;
+        }
+        setImageLoading(false);
+    };
 
     return (
         <div className="w-full h-full overflow-y-auto relative scrollbar-custom">
@@ -200,7 +243,9 @@ const Architecture = () => {
                             animate={{ opacity: 1, scale: 1 }}
                             transition={{ delay: index * 0.05, duration: 0.4 }}
                             className="relative aspect-[4/3] rounded-xl overflow-hidden cursor-pointer group"
-                            onClick={() => setSelectedImage(fullResImages[index])}
+                            onClick={() => {
+                                handleImageChange(fullResImages[index]);
+                            }}
                         >
                             <img
                                 src={thumbUrl}
@@ -264,9 +309,8 @@ const Architecture = () => {
                                     e.stopPropagation();
                                     e.currentTarget.blur();
                                     setSlideDirection(-1);
-                                    setImageLoading(true);
                                     const currentIndex = fullResImages.indexOf(selectedImage);
-                                    setSelectedImage(fullResImages[currentIndex - 1]);
+                                    handleImageChange(fullResImages[currentIndex - 1]);
                                 }}
                                 onTouchEnd={(e) => {
                                     setTimeout(() => e.currentTarget.blur(), 100);
@@ -287,9 +331,8 @@ const Architecture = () => {
                                     e.stopPropagation();
                                     e.currentTarget.blur();
                                     setSlideDirection(1);
-                                    setImageLoading(true);
                                     const currentIndex = fullResImages.indexOf(selectedImage);
-                                    setSelectedImage(fullResImages[currentIndex + 1]);
+                                    handleImageChange(fullResImages[currentIndex + 1]);
                                 }}
                                 onTouchEnd={(e) => {
                                     setTimeout(() => e.currentTarget.blur(), 100);
@@ -308,35 +351,24 @@ const Architecture = () => {
                             <AnimatePresence mode="wait" custom={slideDirection}>
                                 <motion.img
                                     key={selectedImage}
-                                    custom={slideDirection}
-                                    initial={{
-                                        opacity: 0,
-                                        x: slideDirection * 100
-                                    }}
-                                    animate={{
-                                        opacity: 1,
-                                        x: 0
-                                    }}
-                                    exit={{
-                                        opacity: 0,
-                                        x: slideDirection * -100
-                                    }}
+                                    initial={{ opacity: 0 }}
+                                    animate={{ opacity: 1 }}
+                                    exit={{ opacity: 0 }}
                                     transition={{
-                                        duration: 0.3,
+                                        duration: 0.1,
                                         ease: "easeInOut"
                                     }}
                                     src={selectedImage}
                                     alt="Full size"
                                     className="max-w-full max-h-[calc(100vh-120px)] min-h-[200px] object-contain rounded-2xl shadow-2xl"
                                     onClick={(e) => e.stopPropagation()}
-                                    onLoadStart={() => setImageLoading(true)}
-                                    onLoad={() => setImageLoading(false)}
+                                    onLoad={handleImageLoad}
                                 />
                             </AnimatePresence>
 
                             {/* Loading Spinner */}
                             {imageLoading && (
-                                <div className="absolute inset-0 flex items-center justify-center">
+                                <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-50">
                                     <div className="w-12 h-12 border-4 border-[var(--accent-color)]/30 border-t-[var(--accent-color)] rounded-full animate-spin"></div>
                                 </div>
                             )}
