@@ -7,54 +7,34 @@ import Footer from '../components/Layout/Footer';
 
 
 // Image filenames
-const imageFilenames = [
-    'Image~2.webp', 'Image~3.webp', 'PXL_20221217_204749031~2.webp',
-    'PXL_20230224_221616739~2.webp', 'PXL_20230224_231524647.webp',
-    'PXL_20230224_231548104~2.webp', 'PXL_20230615_132742527~3.webp',
-    'PXL_20230615_171002859~2.webp', 'PXL_20230820_190817904.webp',
-    'PXL_20230823_163247227.webp', 'PXL_20231209_234911689-01.webp',
-    'PXL_20240311_202043373.webp', 'PXL_20240311_202048690~3.webp',
-    'PXL_20240312_190659652~2.webp', 'PXL_20240519_173245250.webp',
-    'PXL_20240807_184452907~2.webp', 'PXL_20240807_191904432~2.webp',
-    'PXL_20240808_121018498~2.webp', 'PXL_20240808_124013650.webp',
-    'PXL_20240808_124655591~2.webp', 'PXL_20240809_092223441~3.webp',
-    'PXL_20240810_065634673.webp', 'PXL_20240810_091337394.webp',
-    'PXL_20240810_092813117~2.webp', 'PXL_20240810_094532001~2.webp',
-    'PXL_20240811_141332088.webp', 'PXL_20240811_154807741~3.webp',
-    'PXL_20240811_192512755.webp', 'PXL_20240812_094141298~2.webp',
-    'PXL_20250215_174428711~2.webp', 'PXL_20250704_204053335.MP~2.webp',
-    'PXL_20250705_213231237~2.webp', 'PXL_20250705_213854943~2.webp',
-    'PXL_20250705_232335490~2.webp', 'PXL_20250705_233147330~2.webp',
-    'PXL_20250705_234009670~2.webp', 'PXL_20250705_235947312.webp',
-    'PXL_20250706_000248312.webp', 'PXL_20250706_162337271.webp',
-    'PXL_20250706_170611324~2.webp', 'PXL_20250706_171047823.webp',
-    'PXL_20250706_171257546.webp', 'PXL_20250706_172128615~2.webp',
-    'PXL_20250706_172153148~2.webp', 'PXL_20250706_172813182.webp',
-    'PXL_20250706_173222362~2.webp', 'PXL_20250706_173231367~2.webp',
-    'PXL_20250706_182200066.webp', 'PXL_20250821_171138451~2.webp',
-    'PXL_20250821_191140603~2.webp', 'PXL_20250822_091955296~2.webp',
-    'PXL_20250822_092642867~2.webp', 'PXL_20250822_163225543.webp',
-    'PXL_20250822_172152402~2.webp', 'PXL_20250823_142022828~2.webp',
-    'PXL_20250824_090714275~2.webp', 'PXL_20250824_102438799~2.webp',
-    'PXL_20250824_111430018.webp', 'PXL_20250824_183325819.webp',
-    'PXL_20250826_134746038~2.webp', 'PXL_20250826_134846251.webp',
-    'PXL_20250828_164804723~2.webp', 'PXL_20250829_114414779.webp',
-    'PXL_20250829_120156307~2.webp', 'PXL_20250829_123341484~3.webp',
-    'PXL_20250829_144924912~2.webp', 'PXL_20250830_083930550~2.webp',
-    'PXL_20250830_113922121.webp', 'PXL_20250830_183239712~2.webp',
-    'PXL_20251025_171310690.webp', 'PXL_20251025_183557572~2.webp',
-    'PXL_20251206_192935305.webp', 'PXL_20251206_195507168.webp'
-];
+// Automatically find all images in the public/images/architecture directory
+const fullResModules = import.meta.glob('../../public/images/architecture/*.{webp,jpg,jpeg,png,JPG,JPEG,PNG,WEBP}');
+const thumbModules = import.meta.glob('../../public/images/architecture/thumbs/*.{webp,jpg,jpeg,png,JPG,JPEG,PNG,WEBP}');
 
-// Thumbnail images for gallery (800px wide, faster loading)
-const thumbnails = imageFilenames.map(filename =>
-    `${import.meta.env.BASE_URL}images/architecture/thumbs/${filename}`
-);
+// Helper to extract filename from path
+const getFilename = (path) => path.split('/').pop();
 
-// Full resolution images for lightbox
-const fullResImages = imageFilenames.map(filename =>
+// Get list of all full resolution images
+const allFilenames = Object.keys(fullResModules).map(getFilename).sort();
+const thumbFilenames = new Set(Object.keys(thumbModules).map(getFilename));
+
+// Full resolution images for lightbox (includes EVERYTHING found in the folder)
+const fullResImages = allFilenames.map(filename =>
     `${import.meta.env.BASE_URL}images/architecture/${filename}`
 );
+
+// Gallery images (ONLY matches that have a thumbnail)
+// We store both the thumb URL and the full res URL (for click handler)
+const galleryItems = allFilenames
+    .filter(filename => thumbFilenames.has(filename))
+    .map(filename => ({
+        thumb: `${import.meta.env.BASE_URL}images/architecture/thumbs/${filename}`,
+        full: `${import.meta.env.BASE_URL}images/architecture/${filename}`,
+        filename: filename
+    }));
+
+// Derived thumbnails array for grid rendering (to keep existing map logic mostly compatible, though we'll update it)
+const thumbnails = galleryItems.map(item => item.thumb);
 
 const Architecture = () => {
     const navigate = useNavigate();
@@ -66,11 +46,125 @@ const Architecture = () => {
     // Zoom and pan state
     const [zoomLevel, setZoomLevel] = useState(1);
     const [panPosition, setPanPosition] = useState({ x: 0, y: 0 });
-    const [isDragging, setIsDragging] = useState(false);
-    const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
+    // Use refs for state to access current value in event handlers without triggering re-creation
+    const panPositionRef = React.useRef({ x: 0, y: 0 });
+    const zoomLevelRef = React.useRef(1);
 
-    // Persistent cache to prevent GC
+    // Sync refs with state
+    useLayoutEffect(() => {
+        // Only sync if NOT dragging. During drag, the Ref is the source of truth (updated by handler)
+        // and State follows. Overwriting Ref with State during drag causes "stutter/jumps" due to render lag.
+        if (!isDraggingRef.current) {
+            panPositionRef.current = panPosition;
+        }
+    }, [panPosition]);
+
+    useLayoutEffect(() => {
+        zoomLevelRef.current = zoomLevel;
+    }, [zoomLevel]);
+
+    // Drag state
+    const [isDragging, setIsDragging] = useState(false);
+    // Use refs for drag state to ensure immediate updates during event handling
+    const isDraggingRef = React.useRef(false);
+    const dragStartRef = React.useRef({ x: 0, y: 0 });
+    const imageRef = React.useRef(null); // Direct DOM access for zero-latency updates
+    // Touch handlers for mobile pinch-to-zoom
+    const touchStartRef = React.useRef({ distance: 0, zoom: 1 });
+    const loadingTimeoutRef = React.useRef(null);
     const preloadedMap = React.useRef(new Map());
+
+    const handleTouchStart = React.useCallback((e) => {
+        const currentZoom = zoomLevelRef.current;
+        const currentPan = panPositionRef.current;
+
+        // Debug logs active
+        // console.log('TouchStart', { touches: e.touches.length, zoomLevel: currentZoom, targetTag: e.target.tagName });
+
+        if (e.touches.length === 2) {
+            // Pinch Start
+            const touch1 = e.touches[0];
+            const touch2 = e.touches[1];
+            const distance = Math.hypot(
+                touch2.clientX - touch1.clientX,
+                touch2.clientY - touch1.clientY
+            );
+            touchStartRef.current = { distance, zoom: currentZoom };
+        } else if (e.touches.length === 1 && currentZoom > 1) {
+            // Pan Start (merged) - Allow dragging anywhere except buttons
+            if (e.target.closest('button')) return;
+
+            // console.log('Starting Pan');
+            isDraggingRef.current = true;
+            setIsDragging(true);
+            const touch = e.touches[0];
+            // Calculate start position relative to current pan position
+            // Note: We don't preventDefault here to allow potential clicks (tap to zoom)
+            // Use REF for value to keep handler stable
+            dragStartRef.current = { x: touch.clientX - currentPan.x, y: touch.clientY - currentPan.y };
+            dragDistanceRef.current = 0;
+        }
+    }, []); // Zero dependencies!
+
+    const handleTouchMove = React.useCallback((e) => {
+        const currentZoom = zoomLevelRef.current;
+        // Debug logs active
+        // console.log('TouchMove', { touches: e.touches.length, isDragging: isDraggingRef.current, zoomLevel: currentZoom });
+        if (e.touches.length === 2) {
+            // Pinch Move
+            e.preventDefault();
+            const touch1 = e.touches[0];
+            const touch2 = e.touches[1];
+            const distance = Math.hypot(
+                touch2.clientX - touch1.clientX,
+                touch2.clientY - touch1.clientY
+            );
+
+            const scale = distance / touchStartRef.current.distance;
+            const newZoom = Math.max(1, Math.min(3, touchStartRef.current.zoom * scale));
+
+            // Clear any pending loading timeout when zooming via pinch
+            if (loadingTimeoutRef.current) {
+                clearTimeout(loadingTimeoutRef.current);
+                loadingTimeoutRef.current = null;
+            }
+            setImageLoading(false);
+
+            setZoomLevel(newZoom);
+            if (newZoom === 1) {
+                setPanPosition({ x: 0, y: 0 });
+            }
+        } else if (e.touches.length === 1 && isDraggingRef.current && currentZoom > 1) {
+            // Pan Move (merged)
+            e.preventDefault(); // Stop browser scrolling
+
+            const touch = e.touches[0];
+            const newX = touch.clientX - dragStartRef.current.x;
+            const newY = touch.clientY - dragStartRef.current.y;
+
+            // Track drag distance
+            const currentPan = panPositionRef.current;
+            const deltaX = Math.abs(newX - currentPan.x);
+            const deltaY = Math.abs(newY - currentPan.y);
+            dragDistanceRef.current += deltaX + deltaY;
+
+            // Increase pan boundaries to allow viewing entire image
+            const maxPanX = (window.innerWidth / 1.5) * (currentZoom - 1);
+            const maxPanY = (window.innerHeight / 1.5) * (currentZoom - 1);
+
+            // console.log('Panning to', newX, newY);
+
+            setPanPosition({
+                x: Math.max(-maxPanX, Math.min(maxPanX, newX)),
+                y: Math.max(-maxPanY, Math.min(maxPanY, newY))
+            });
+        }
+    }, [loadingTimeoutRef]); // Removed zoomLevel/panPosition dependencies
+
+    const handleTouchEnd = React.useCallback(() => {
+        isDraggingRef.current = false;
+        setIsDragging(false);
+    }, []);
 
     // Preload only first 6 thumbnails (above the fold), let others lazy load
     useLayoutEffect(() => {
@@ -98,8 +192,6 @@ const Architecture = () => {
 
         preloadImages();
     }, [setAreAssetsLoaded]);
-
-    const loadingTimeoutRef = React.useRef(null);
 
     // Preload adjacent images
     useLayoutEffect(() => {
@@ -134,6 +226,12 @@ const Architecture = () => {
         // Reset zoom and pan when changing images
         setZoomLevel(1);
         setPanPosition({ x: 0, y: 0 });
+
+        // Reset drag state REFS to prevent stuck panning
+        isDraggingRef.current = false;
+        dragDistanceRef.current = 0;
+        setIsDragging(false);
+
         setSelectedImage(newImage);
     };
 
@@ -175,7 +273,7 @@ const Architecture = () => {
         let touchEndX = 0;
         let isPinching = false; // Track if user is pinching
 
-        const handleTouchStart = (e) => {
+        const handleTouchStartSwipe = (e) => {
             // If multi-touch, it's a pinch gesture
             if (e.touches.length > 1) {
                 isPinching = true;
@@ -185,7 +283,7 @@ const Architecture = () => {
             touchStartX = e.changedTouches[0].screenX;
         };
 
-        const handleTouchEnd = (e) => {
+        const handleTouchEndSwipe = (e) => {
             // Don't navigate if user was pinching
             if (isPinching || e.touches.length > 0) {
                 return;
@@ -218,13 +316,40 @@ const Architecture = () => {
             }
         };
 
-        window.addEventListener('touchstart', handleTouchStart);
-        window.addEventListener('touchend', handleTouchEnd);
+        window.addEventListener('touchstart', handleTouchStartSwipe);
+        window.addEventListener('touchend', handleTouchEndSwipe);
         return () => {
-            window.removeEventListener('touchstart', handleTouchStart);
-            window.removeEventListener('touchend', handleTouchEnd);
+            window.removeEventListener('touchstart', handleTouchStartSwipe);
+            window.removeEventListener('touchend', handleTouchEndSwipe);
         };
     }, [selectedImage, fullResImages, zoomLevel]);
+
+    // Reset drag distance + state AND CLAMP PAN position when zoom changes
+    useLayoutEffect(() => {
+        dragDistanceRef.current = 0;
+        isDraggingRef.current = false;
+        setIsDragging(false);
+
+        // Clamp pan position to new boundaries immediately
+        // This prevents "dead zone" dragging if we zoomed out while panned far away
+        const maxPanX = (window.innerWidth / 1.5) * (zoomLevel - 1);
+        const maxPanY = (window.innerHeight / 1.5) * (zoomLevel - 1);
+
+        setPanPosition(prev => {
+            // Only update if out of bounds to avoid unnecessary renders
+            const clampedX = Math.max(-maxPanX, Math.min(maxPanX, prev.x));
+            const clampedY = Math.max(-maxPanY, Math.min(maxPanY, prev.y));
+
+            if (clampedX !== prev.x || clampedY !== prev.y) {
+                // CRITICAL: Update Ref IMMEDIATELY so handlers see the clamped value 
+                // before the next render cycle completes
+                panPositionRef.current = { x: clampedX, y: clampedY };
+                return { x: clampedX, y: clampedY };
+            }
+            return prev;
+        });
+
+    }, [zoomLevel]);
 
     const handleImageLoad = (event) => {
         if (loadingTimeoutRef.current) {
@@ -243,18 +368,31 @@ const Architecture = () => {
         if (e.target.tagName === 'IMG') {
             e.stopPropagation();
 
-
             // Don't toggle zoom if user was dragging
             if (dragDistanceRef.current > 5) {
                 dragDistanceRef.current = 0;
                 return;
             }
 
-            // Check if it's a touch device
-            const isTouchDevice = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+            // Detect input type (mouse vs touch)
+            // Use pointerType if available, fallback to touch detection
+            const isTouch = (e.nativeEvent && e.nativeEvent.pointerType === 'touch') ||
+                ('ontouchstart' in window && navigator.maxTouchPoints > 0);
 
-            if (isTouchDevice) {
-                // On mobile: require double-tap
+            // However, pointerType 'mouse' is definitive for mouse users even on touch devices
+            // If explicit mouse click, always single-click zoom
+            const isMouse = e.nativeEvent && e.nativeEvent.pointerType === 'mouse';
+
+            if (isMouse || !isTouch) {
+                // Desktop/Mouse: Single click to toggle zoom
+                if (zoomLevel === 1) {
+                    setZoomLevel(2);
+                } else {
+                    setZoomLevel(1);
+                    setPanPosition({ x: 0, y: 0 });
+                }
+            } else {
+                // Mobile/Touch: Double-tap to toggle zoom
                 const now = Date.now();
                 const timeSinceLastTap = now - lastTapRef.current;
 
@@ -270,14 +408,6 @@ const Architecture = () => {
                 } else {
                     // First tap
                     lastTapRef.current = now;
-                }
-            } else {
-                // On desktop: single-click zoom
-                if (zoomLevel === 1) {
-                    setZoomLevel(2);
-                } else {
-                    setZoomLevel(1);
-                    setPanPosition({ x: 0, y: 0 });
                 }
             }
         }
@@ -295,144 +425,154 @@ const Architecture = () => {
         }
         setImageLoading(false);
 
+        const currentZoom = zoomLevelRef.current;
+        const currentPan = panPositionRef.current;
         const delta = e.deltaY > 0 ? -0.2 : 0.2;
-        setZoomLevel(prev => {
-            const newZoom = Math.max(1, Math.min(3, prev + delta));
-            if (newZoom === 1) {
-                setPanPosition({ x: 0, y: 0 });
-            }
-            return newZoom;
-        });
-    }, [selectedImage, loadingTimeoutRef]);
+
+        // Calculate new zoom
+        const newZoom = Math.max(1, Math.min(3, currentZoom + delta));
+
+        if (newZoom === currentZoom) return;
+
+        // Calculate Mouse Offset relating to center of screen (M)
+        const rect = containerRef.current.getBoundingClientRect();
+        const centerX = rect.width / 2;
+        const centerY = rect.height / 2;
+
+        // Mouse position relative to center
+        const mouseX = e.clientX - rect.left - centerX;
+        const mouseY = e.clientY - rect.top - centerY;
+
+        // Math: P_new = M - (M - P_old) * (Z_new / Z_old)
+        // effectively scaling the distance from the viewport center to the image point under the cursor
+        const scaleFactor = newZoom / currentZoom;
+        const targetPanX = mouseX - (mouseX - currentPan.x) * scaleFactor;
+        const targetPanY = mouseY - (mouseY - currentPan.y) * scaleFactor;
+
+        // Calculate clamped pan for NEW zoom immediately
+        const maxPanX = (window.innerWidth / 1.5) * (newZoom - 1);
+        const maxPanY = (window.innerHeight / 1.5) * (newZoom - 1);
+
+        const clampedX = Math.max(-maxPanX, Math.min(maxPanX, targetPanX));
+        const clampedY = Math.max(-maxPanY, Math.min(maxPanY, targetPanY));
+
+        // CRITICAL: Update Refs IMMEDIATELY so handlers see the correct values
+        zoomLevelRef.current = newZoom;
+        panPositionRef.current = { x: clampedX, y: clampedY };
+        isDraggingRef.current = false; // Force break any active drag
+
+        // DOM Update for instant feedback
+        if (imageRef.current) {
+            imageRef.current.style.transform = `scale(${newZoom}) translate(${clampedX / newZoom}px, ${clampedY / newZoom}px)`;
+        }
+
+        // Batch state updates
+        setZoomLevel(newZoom);
+        setPanPosition({ x: clampedX, y: clampedY });
+
+    }, [selectedImage]);
+
+    const containerRef = React.useRef(null);
 
     // Register non-passive wheel listener
     useLayoutEffect(() => {
-        if (!selectedImage) return;
+        if (!selectedImage || !containerRef.current) return;
 
-        const lightboxElement = document.querySelector('[data-lightbox="true"]');
-        if (!lightboxElement) return;
-
+        const lightboxElement = containerRef.current;
         lightboxElement.addEventListener('wheel', handleWheel, { passive: false });
 
         return () => {
             lightboxElement.removeEventListener('wheel', handleWheel);
         };
-    }, [selectedImage, handleWheel]);
+    }, [selectedImage, handleWheel]); // Container ref is stable
 
-    // Pan/drag handlers
-    const handleMouseDown = (e) => {
-        if (zoomLevel > 1 && e.target.tagName === 'IMG') {
-            setIsDragging(true);
-            setDragStart({ x: e.clientX - panPosition.x, y: e.clientY - panPosition.y });
-            dragDistanceRef.current = 0; // Reset drag distance
+    // Pan/drag handlers (MOUSE) - DELTA BASED
+    const lastMousePosRef = React.useRef({ x: 0, y: 0 });
+
+    const handleMouseDown = React.useCallback((e) => {
+        const currentZoom = zoomLevelRef.current;
+        // Only allow Left Click (0)
+        if (e.button !== 0) return;
+
+        // console.log('MouseDown', { zoom: currentZoom, buttons: e.buttons });
+
+        if (currentZoom > 1) {
+            // Allow dragging anywhere except buttons
+            if (e.target.closest('button')) return;
+
             e.preventDefault();
-        }
-    };
-
-    const handleMouseMove = (e) => {
-        if (isDragging && zoomLevel > 1) {
-            const newX = e.clientX - dragStart.x;
-            const newY = e.clientY - dragStart.y;
-
-            // Track drag distance (use simple Manhattan distance for performance)
-            const deltaX = Math.abs(newX - panPosition.x);
-            const deltaY = Math.abs(newY - panPosition.y);
-            dragDistanceRef.current += deltaX + deltaY;
-
-            // Increase pan boundaries to allow viewing entire image
-            const maxPanX = (window.innerWidth / 1.5) * (zoomLevel - 1);
-            const maxPanY = (window.innerHeight / 1.5) * (zoomLevel - 1);
-
-            setPanPosition({
-                x: Math.max(-maxPanX, Math.min(maxPanX, newX)),
-                y: Math.max(-maxPanY, Math.min(maxPanY, newY))
-            });
-        }
-    };
-
-    const handleMouseUp = () => {
-        setIsDragging(false);
-    };
-
-    // Touch handlers for mobile panning
-    const handleTouchStartPan = (e) => {
-        if (zoomLevel > 1 && e.target.tagName === 'IMG' && e.touches.length === 1) {
+            isDraggingRef.current = true;
             setIsDragging(true);
-            const touch = e.touches[0];
-            setDragStart({ x: touch.clientX - panPosition.x, y: touch.clientY - panPosition.y });
+
+            // Store initial mouse position for delta calculation
+            lastMousePosRef.current = { x: e.clientX, y: e.clientY };
             dragDistanceRef.current = 0;
         }
-    };
+    }, []);
 
-    const handleTouchMovePan = (e) => {
-        if (isDragging && zoomLevel > 1 && e.touches.length === 1) {
-            const touch = e.touches[0];
-            const newX = touch.clientX - dragStart.x;
-            const newY = touch.clientY - dragStart.y;
+    const handleMouseMove = React.useCallback((e) => {
+        const currentZoom = zoomLevelRef.current;
+
+        // Safety: If buttons are released (0), stop everything.
+        // Also ensure we are still holding strict Left Click (1) if checking bitmask
+        if (isDraggingRef.current && currentZoom > 1) {
+            // Standard bitmask: 1=Left, 2=Right, 4=Middle.
+            // If Left is not pressed, stop.
+            if ((e.buttons & 1) === 0) {
+                isDraggingRef.current = false;
+                setIsDragging(false);
+                return;
+            }
+
+            e.preventDefault();
+
+            // Calculate Delta
+            const deltaX = e.clientX - lastMousePosRef.current.x;
+            const deltaY = e.clientY - lastMousePosRef.current.y;
+
+            // Update last pos
+            lastMousePosRef.current = { x: e.clientX, y: e.clientY };
+
+            // Apply Delta to Current Pan
+            const currentPan = panPositionRef.current;
+            const newX = currentPan.x + deltaX;
+            const newY = currentPan.y + deltaY;
 
             // Track drag distance
-            const deltaX = Math.abs(newX - panPosition.x);
-            const deltaY = Math.abs(newY - panPosition.y);
-            dragDistanceRef.current += deltaX + deltaY;
+            dragDistanceRef.current += Math.abs(deltaX) + Math.abs(deltaY);
 
-            // Increase pan boundaries to allow viewing entire image
-            const maxPanX = (window.innerWidth / 1.5) * (zoomLevel - 1);
-            const maxPanY = (window.innerHeight / 1.5) * (zoomLevel - 1);
+            // Clamp
+            const maxPanX = (window.innerWidth / 1.5) * (currentZoom - 1);
+            const maxPanY = (window.innerHeight / 1.5) * (currentZoom - 1);
 
-            setPanPosition({
-                x: Math.max(-maxPanX, Math.min(maxPanX, newX)),
-                y: Math.max(-maxPanY, Math.min(maxPanY, newY))
-            });
+            const clampedX = Math.max(-maxPanX, Math.min(maxPanX, newX));
+            const clampedY = Math.max(-maxPanY, Math.min(maxPanY, newY));
+
+            // CRITICAL: Manually update Ref since we blocked the Effect sync during drag
+            panPositionRef.current = { x: clampedX, y: clampedY };
+
+            // NUCLEAR LATTENCY FIX: Direct DOM update to bypass React Render Cycle
+            if (imageRef.current) {
+                imageRef.current.style.transform = `scale(${currentZoom}) translate(${clampedX / currentZoom}px, ${clampedY / currentZoom}px)`;
+            }
+
+            // OPTIMIZATION: Do NOT update state during drag. This prevents React from overwriting
+            // our manual DOM updates with stale/laggy frames, and eliminates re-renders.
+            // (State will be synced on MouseUp)
+            // setPanPosition({ x: clampedX, y: clampedY }); 
         }
-    };
+    }, []);
 
-    const handleTouchEndPan = () => {
+    const handleMouseUp = React.useCallback(() => {
+        if (isDraggingRef.current) {
+            // Commit final position to state
+            setPanPosition(panPositionRef.current);
+        }
+        isDraggingRef.current = false;
         setIsDragging(false);
-    };
+    }, []);
 
-    // Touch handlers for mobile pinch-to-zoom
-    const touchStartRef = React.useRef({ distance: 0, zoom: 1 });
-
-    const handleTouchStart = React.useCallback((e) => {
-        if (e.touches.length === 2) {
-            const touch1 = e.touches[0];
-            const touch2 = e.touches[1];
-            const distance = Math.hypot(
-                touch2.clientX - touch1.clientX,
-                touch2.clientY - touch1.clientY
-            );
-            touchStartRef.current = { distance, zoom: zoomLevel };
-        }
-    }, [zoomLevel]);
-
-    const handleTouchMove = React.useCallback((e) => {
-        if (e.touches.length === 2) {
-            e.preventDefault();
-            const touch1 = e.touches[0];
-            const touch2 = e.touches[1];
-            const distance = Math.hypot(
-                touch2.clientX - touch1.clientX,
-                touch2.clientY - touch1.clientY
-            );
-
-            const scale = distance / touchStartRef.current.distance;
-            const newZoom = Math.max(1, Math.min(3, touchStartRef.current.zoom * scale));
-
-            // Clear any pending loading timeout when zooming via pinch
-            if (loadingTimeoutRef.current) {
-                clearTimeout(loadingTimeoutRef.current);
-                loadingTimeoutRef.current = null;
-            }
-            setImageLoading(false);
-
-            setZoomLevel(newZoom);
-            if (newZoom === 1) {
-                setPanPosition({ x: 0, y: 0 });
-            }
-        }
-    }, [loadingTimeoutRef]);
-
-    // Register non-passive touch listeners for pinch-to-zoom
+    // Register non-passive touch listeners for pinch-to-zoom AND panning
     useLayoutEffect(() => {
         if (!selectedImage) return;
 
@@ -441,12 +581,23 @@ const Architecture = () => {
 
         lightboxElement.addEventListener('touchstart', handleTouchStart, { passive: false });
         lightboxElement.addEventListener('touchmove', handleTouchMove, { passive: false });
+        lightboxElement.addEventListener('touchend', handleTouchEnd);
 
         return () => {
             lightboxElement.removeEventListener('touchstart', handleTouchStart);
             lightboxElement.removeEventListener('touchmove', handleTouchMove);
+            lightboxElement.removeEventListener('touchend', handleTouchEnd);
         };
-    }, [selectedImage, handleTouchStart, handleTouchMove]);
+    }, [selectedImage, handleTouchStart, handleTouchMove, handleTouchEnd]);
+
+    // Handle Clicking Background to Close
+    const handleBackdropClick = React.useCallback((e) => {
+        // Only close if clicking the backdrop itself (not the image or buttons, though stopPropagation usually handles this)
+        // AND if we haven't been dragging (distinguish pan from click)
+        if (e.target === e.currentTarget && dragDistanceRef.current < 5) {
+            setSelectedImage(null);
+        }
+    }, []);
 
     return (
         <div className="w-full h-full overflow-y-auto relative scrollbar-custom">
@@ -483,7 +634,7 @@ const Architecture = () => {
                             transition={{ delay: index * 0.05, duration: 0.4 }}
                             className="relative aspect-[4/3] rounded-xl overflow-hidden cursor-pointer group"
                             onClick={() => {
-                                handleImageChange(fullResImages[index]);
+                                handleImageChange(galleryItems[index].full);
                             }}
                         >
                             <img
@@ -523,14 +674,19 @@ const Architecture = () => {
             <AnimatePresence>
                 {selectedImage && (
                     <motion.div
+                        ref={containerRef}
+                        key="lightbox-modal"
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
                         exit={{ opacity: 0 }}
-                        className="fixed inset-0 z-[100] bg-black/95 flex items-center justify-center p-4 md:p-2"
+                        className="fixed inset-0 z-50 flex items-center justify-center bg-black touch-none select-none p-4 md:p-10"
                         data-lightbox="true"
+                        onClick={handleBackdropClick}
+                        onMouseDown={handleMouseDown}
                         onMouseMove={handleMouseMove}
                         onMouseUp={handleMouseUp}
                         onMouseLeave={handleMouseUp}
+                        onDragStart={(e) => e.preventDefault()} // Block native drag
                     >
                         {/* Close Button */}
                         <button
@@ -595,6 +751,7 @@ const Architecture = () => {
                         <div className="relative w-full h-full min-h-[300px] flex items-center justify-center pb-12">
                             <AnimatePresence mode="wait" custom={slideDirection}>
                                 <motion.img
+                                    ref={imageRef}
                                     key={selectedImage}
                                     initial={{ opacity: 0 }}
                                     animate={{ opacity: 1 }}
@@ -613,10 +770,6 @@ const Architecture = () => {
                                         willChange: zoomLevel > 1 ? 'transform' : 'auto'
                                     }}
                                     onClick={handleImageClick}
-                                    onMouseDown={handleMouseDown}
-                                    onTouchStart={handleTouchStartPan}
-                                    onTouchMove={handleTouchMovePan}
-                                    onTouchEnd={handleTouchEndPan}
                                     onLoad={handleImageLoad}
                                     draggable={false}
                                 />
