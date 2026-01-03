@@ -14,7 +14,8 @@ This folder contains images for the Architecture gallery page.
 - **File Size**: Optimize images to keep them under 2MB each for faster loading
 - **Aspect Ratio**: Any aspect ratio works, but consistent ratios look better in galleries
 
-## Notes
-
-- Images are automatically loaded from this directory by the Architecture page component
-- No need to manually update code when adding/removing images
+- Images are **automatically loaded** from this directory by the Architecture page component using dynamic imports.
+- Simply add images to this folder, and (optionally) add a corresponding thumbnail in the `thumbs` subfolder.
+- **Gallery Behavior**: Only images with a matching thumbnail in the `thumbs` folder will appear in the main grid (to ensure fast loading).
+- **Lightbox Behavior**: All images in this folder are accessible in the lightbox view, even if they don't have a thumbnail (you can swipe to them).
+- No manual code updates are required when adding new images.

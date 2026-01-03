@@ -25,22 +25,38 @@ const ErrorFallback = ({ error, resetErrorBoundary }) => {
                 <div className="w-full h-[1px] bg-gradient-to-r from-transparent via-[var(--accent-color)] to-transparent opacity-50 my-4 flex-shrink-0" />
 
                 {/* Collapsible Technical Error Details */}
+                {/* Collapsible Technical Error Details */}
                 {error && (
                     <div className="w-full mb-6 flex-shrink-0">
-                        <button
-                            onClick={() => setIsDetailsOpen(!isDetailsOpen)}
-                            className="w-full flex items-center justify-between px-4 py-2 bg-black/40 border border-white/10 rounded hover:bg-black/60 transition-colors text-xs text-[var(--text-secondary)] font-mono uppercase tracking-wider mb-2"
-                        >
-                            <span className="flex items-center gap-2">
-                                <Terminal size={14} />
-                                System Diagnostics
-                            </span>
-                            {isDetailsOpen ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
-                        </button>
+                        <div className="flex gap-2 mb-2">
+                            <button
+                                onClick={() => setIsDetailsOpen(!isDetailsOpen)}
+                                className="flex-1 flex items-center justify-between px-4 py-2 bg-black/40 border border-white/10 rounded hover:bg-black/60 transition-colors text-xs text-[var(--text-secondary)] font-mono uppercase tracking-wider"
+                            >
+                                <span className="flex items-center gap-2">
+                                    <Terminal size={14} />
+                                    System Diagnostics
+                                </span>
+                                {isDetailsOpen ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
+                            </button>
+                            <button
+                                onClick={() => {
+                                    const text = `Error: ${error.toString()}\n\nStack:\n${error.stack || 'No stack trace'}`;
+                                    navigator.clipboard.writeText(text);
+                                }}
+                                className="px-4 py-2 bg-[var(--accent-color)]/10 border border-[var(--accent-color)]/50 rounded hover:bg-[var(--accent-color)]/20 text-[var(--accent-color)] transition-colors"
+                                aria-label="Copy Error"
+                            >
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                    <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                                    <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                                </svg>
+                            </button>
+                        </div>
 
                         {isDetailsOpen && (
-                            <div className="w-full bg-black/90 border border-red-900/30 p-4 rounded text-left overflow-auto max-h-48 scrollbar-custom shadow-inner">
-                                <div className="font-mono text-[10px] md:text-xs leading-relaxed text-red-400/80 font-normal break-all whitespace-pre-wrap">
+                            <div className="w-full bg-black/90 border border-red-900/30 p-4 rounded text-left overflow-auto max-h-48 scrollbar-custom shadow-inner select-text cursor-text">
+                                <div className="font-mono text-[10px] md:text-xs leading-relaxed text-red-400/80 font-normal break-all whitespace-pre-wrap selection:bg-red-500/30 selection:text-red-200">
                                     <span className="text-red-500 font-bold block mb-2">Error: {error.toString()}</span>
                                     {error.stack && (
                                         <span className="opacity-75">{error.stack}</span>

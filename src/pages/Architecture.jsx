@@ -154,14 +154,30 @@ const Architecture = () => {
 
             // console.log('Panning to', newX, newY);
 
-            setPanPosition({
-                x: Math.max(-maxPanX, Math.min(maxPanX, newX)),
-                y: Math.max(-maxPanY, Math.min(maxPanY, newY))
-            });
+            const clampedX = Math.max(-maxPanX, Math.min(maxPanX, newX));
+            const clampedY = Math.max(-maxPanY, Math.min(maxPanY, newY));
+
+            // CRITICAL: Manually update Ref
+            panPositionRef.current = { x: clampedX, y: clampedY };
+
+            // NUCLEAR LATTENCY FIX: Direct DOM update to bypass React Render Cycle
+            if (imageRef.current) {
+                imageRef.current.style.transform = `scale(${currentZoom}) translate(${clampedX / currentZoom}px, ${clampedY / currentZoom}px)`;
+            }
+
+            // OPTIMIZATION: Do NOT update state during drag
+            // setPanPosition({
+            //     x: clampedX,
+            //     y: clampedY
+            // });
         }
     }, [loadingTimeoutRef]); // Removed zoomLevel/panPosition dependencies
 
     const handleTouchEnd = React.useCallback(() => {
+        if (isDraggingRef.current) {
+            // Commit final position to state
+            setPanPosition(panPositionRef.current);
+        }
         isDraggingRef.current = false;
         setIsDragging(false);
     }, []);
@@ -489,27 +505,6 @@ const Architecture = () => {
     // Pan/drag handlers (MOUSE) - DELTA BASED
     const lastMousePosRef = React.useRef({ x: 0, y: 0 });
 
-    const handleMouseDown = React.useCallback((e) => {
-        const currentZoom = zoomLevelRef.current;
-        // Only allow Left Click (0)
-        if (e.button !== 0) return;
-
-        // console.log('MouseDown', { zoom: currentZoom, buttons: e.buttons });
-
-        if (currentZoom > 1) {
-            // Allow dragging anywhere except buttons
-            if (e.target.closest('button')) return;
-
-            e.preventDefault();
-            isDraggingRef.current = true;
-            setIsDragging(true);
-
-            // Store initial mouse position for delta calculation
-            lastMousePosRef.current = { x: e.clientX, y: e.clientY };
-            dragDistanceRef.current = 0;
-        }
-    }, []);
-
     const handleMouseMove = React.useCallback((e) => {
         const currentZoom = zoomLevelRef.current;
 
@@ -564,13 +559,42 @@ const Architecture = () => {
     }, []);
 
     const handleMouseUp = React.useCallback(() => {
+        // ALWAYS Remove global listeners
+        window.removeEventListener('mousemove', handleMouseMove);
+        window.removeEventListener('mouseup', handleMouseUp);
+
         if (isDraggingRef.current) {
             // Commit final position to state
             setPanPosition(panPositionRef.current);
         }
         isDraggingRef.current = false;
         setIsDragging(false);
-    }, []);
+    }, [handleMouseMove]); // Depends on handleMouseMove identity
+
+    const handleMouseDown = React.useCallback((e) => {
+        const currentZoom = zoomLevelRef.current;
+        // Only allow Left Click (0)
+        if (e.button !== 0) return;
+
+        // console.log('MouseDown', { zoom: currentZoom, buttons: e.buttons });
+
+        if (currentZoom > 1) {
+            // Allow dragging anywhere except buttons
+            if (e.target.closest('button')) return;
+
+            e.preventDefault();
+            isDraggingRef.current = true;
+            setIsDragging(true);
+
+            // Store initial mouse position for delta calculation
+            lastMousePosRef.current = { x: e.clientX, y: e.clientY };
+            dragDistanceRef.current = 0;
+
+            // Attach GLOBAL listeners to window to persist drag outside element
+            window.addEventListener('mousemove', handleMouseMove);
+            window.addEventListener('mouseup', handleMouseUp);
+        }
+    }, [handleMouseMove, handleMouseUp]);
 
     // Register non-passive touch listeners for pinch-to-zoom AND panning
     useLayoutEffect(() => {
@@ -683,9 +707,6 @@ const Architecture = () => {
                         data-lightbox="true"
                         onClick={handleBackdropClick}
                         onMouseDown={handleMouseDown}
-                        onMouseMove={handleMouseMove}
-                        onMouseUp={handleMouseUp}
-                        onMouseLeave={handleMouseUp}
                         onDragStart={(e) => e.preventDefault()} // Block native drag
                     >
                         {/* Close Button */}
@@ -716,7 +737,7 @@ const Architecture = () => {
                                 onTouchEnd={(e) => {
                                     setTimeout(() => e.currentTarget.blur(), 100);
                                 }}
-                                className="absolute left-6 top-1/2 -translate-y-1/2 w-12 h-12 rounded-full bg-black/50 border-2 border-[var(--accent-color)] text-[var(--accent-color)] active:bg-[var(--accent-color)] active:text-black transition-all duration-300 hidden md:flex items-center justify-center z-10 [@media(hover:hover)]:hover:bg-[var(--accent-color)] [@media(hover:hover)]:hover:text-black [@media(max-height:500px)]:top-[60%]"
+                                className="absolute left-6 top-1/2 -translate-y-1/2 w-12 h-12 rounded-full bg-black/50 border-2 border-[var(--accent-color)] text-[var(--accent-color)] active:bg-[var(--accent-color)] active:text-black transition-all duration-300 hidden [@media(pointer:fine)]:flex items-center justify-center z-10 [@media(hover:hover)]:hover:bg-[var(--accent-color)] [@media(hover:hover)]:hover:text-black [@media(max-height:500px)]:top-[60%]"
                                 aria-label="Previous image"
                             >
                                 <svg width="12" height="20" viewBox="0 0 12 20" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -738,7 +759,7 @@ const Architecture = () => {
                                 onTouchEnd={(e) => {
                                     setTimeout(() => e.currentTarget.blur(), 100);
                                 }}
-                                className="absolute right-6 top-1/2 -translate-y-1/2 w-12 h-12 rounded-full bg-black/50 border-2 border-[var(--accent-color)] text-[var(--accent-color)] active:bg-[var(--accent-color)] active:text-black transition-all duration-300 hidden md:flex items-center justify-center z-10 [@media(hover:hover)]:hover:bg-[var(--accent-color)] [@media(hover:hover)]:hover:text-black [@media(max-height:500px)]:top-[60%]"
+                                className="absolute right-6 top-1/2 -translate-y-1/2 w-12 h-12 rounded-full bg-black/50 border-2 border-[var(--accent-color)] text-[var(--accent-color)] active:bg-[var(--accent-color)] active:text-black transition-all duration-300 hidden [@media(pointer:fine)]:flex items-center justify-center z-10 [@media(hover:hover)]:hover:bg-[var(--accent-color)] [@media(hover:hover)]:hover:text-black [@media(max-height:500px)]:top-[60%]"
                                 aria-label="Next image"
                             >
                                 <svg width="12" height="20" viewBox="0 0 12 20" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
