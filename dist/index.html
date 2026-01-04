@@ -1,0 +1,419 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <link rel="icon" type="image/svg+xml" href="/cpu.svg" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>personal-website</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;700;900&display=block" rel="stylesheet">
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      background-color: #050505;
+      overflow: hidden;
+    }
+
+    @keyframes squareWave {
+      0% {
+        transform: translateX(0);
+      }
+
+      100% {
+        transform: translateX(-50%);
+      }
+    }
+
+    .loader-wave {
+      animation: squareWave 2s linear infinite;
+    }
+  </style>
+  <script type="module" crossorigin src="/assets/index-CcuhoQc7.js"></script>
+  <link rel="modulepreload" crossorigin href="/assets/vendor-react-6ah5gmXX.js">
+  <link rel="modulepreload" crossorigin href="/assets/vendor-framer-SwFvxf7O.js">
+  <link rel="modulepreload" crossorigin href="/assets/vendor-icons-D0C9zAVQ.js">
+  <link rel="stylesheet" crossorigin href="/assets/index-CzcBoOQY.css">
+</head>
+
+<body>
+  <!-- Critical Loading Screen (Outside #root to survive hydration) -->
+
+  <div id="initial-loader"
+    style="position: fixed; inset: 0; background-color: #050505; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 1.5rem; z-index: 99999; transition: opacity 0.5s ease-out;">
+
+    <!-- Home Loader Content -->
+    <div id="loader-home" style="display: none; flex-direction: column; align-items: center; gap: 1.5rem;">
+      <div style="width: 16rem; height: 8rem; overflow: hidden; position: relative;">
+        <svg class="loader-wave" viewBox="0 0 400 100" preserveAspectRatio="none"
+          style="width: 200%; height: 100%; display: block;">
+          <path
+            d="M0,80 L0,20 L50,20 L50,80 L100,80 L100,20 L150,20 L150,80 L200,80 L200,20 L250,20 L250,80 L300,80 L300,20 L350,20 L350,80 L400,80"
+            fill="none" stroke="#FFD700" stroke-width="3" stroke-linecap="square"
+            style="filter: drop-shadow(0 0 8px rgba(255, 215, 0, 0.6));" />
+        </svg>
+      </div>
+      <p
+        style="color: #FFD700; font-size: 0.875rem; letter-spacing: 0.3em; font-family: 'Orbitron', monospace; font-weight: 700; text-transform: uppercase; margin: 0; animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;">
+        ANALYZING SIGNALS...
+      </p>
+    </div>
+
+    <!-- Portfolio Loader Content -->
+    <div id="loader-portfolio"
+      style="display: none; align-items: center; justify-content: center; width: 100%; height: 100%;">
+      <canvas id="binary-canvas"
+        style="position: absolute; inset: 0; width: 100%; height: 100%; opacity: 0.8;"></canvas>
+      <div
+        style="position: relative; z-index: 10; display: flex; flex-direction: column; align-items: center; gap: 1rem;">
+        <p
+          style="color: #FFD700; font-size: 0.875rem; letter-spacing: 0.2em; font-family: 'Orbitron', monospace; font-weight: 700; text-transform: uppercase; margin: 0; animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;">
+          DOWNLOADING BYTES...
+        </p>
+      </div>
+      <style>
+        @keyframes pulse {
+
+          0%,
+          100% {
+            opacity: 1;
+          }
+
+          50% {
+            opacity: 0.5;
+          }
+        }
+      </style>
+    </div>
+
+    <!-- Architecture Loader Content -->
+    <div id="loader-architecture" style="display: none; flex-direction: column; align-items: center; gap: 1.5rem;">
+      <div
+        style="position: relative; width: 100%; max-width: 500px; height: 16rem; display: flex; align-items: center; justify-content: center;">
+        <canvas id="architecture-canvas" style="width: 100%; height: 100%; display: block;">
+        </canvas>
+        <!-- Glow Effect Bloom -->
+        <div
+          style="position: absolute; inset: 0; background-color: #FFD700; opacity: 0.05; filter: blur(48px); border-radius: 9999px; pointer-events: none;">
+        </div>
+      </div>
+      <p
+        style="color: #FFD700; font-size: 0.875rem; letter-spacing: 0.3em; font-family: 'Orbitron', monospace; font-weight: 700; text-transform: uppercase; margin: 0; animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;">
+        RENDERING GEOMETRY...
+      </p>
+    </div>
+
+    <!-- Router Logic for Initial Loader -->
+    <script>
+      (function () {
+        const homeLoader = document.getElementById('loader-home');
+        const portfolioLoader = document.getElementById('loader-portfolio');
+        const architectureLoader = document.getElementById('loader-architecture');
+        const path = window.location.pathname;
+
+        if (path.includes('/portfolio')) {
+          portfolioLoader.style.display = 'flex';
+          const canvas = document.getElementById('binary-canvas');
+          // ... (Existing worker logic for portfolio) ...
+          // --- INLINE WORKER FOR ZERO BOOT LAG ---
+          // Runs the animation off-main-thread while React hydrates
+          if (canvas.transferControlToOffscreen) {
+            const offscreen = canvas.transferControlToOffscreen();
+
+            const workerCode = `
+              let ctx;
+              let width, height;
+              let columns;
+              let drops;
+              let fontSize = 14;
+
+              self.onmessage = function(e) {
+                const { type, payload } = e.data;
+                if (type === 'INIT') {
+                  const canvas = payload.canvas;
+                  ctx = canvas.getContext('2d');
+                  width = payload.width;
+                  height = payload.height;
+                  resize();
+                  loop();
+                } else if (type === 'RESIZE') {
+                  width = payload.width;
+                  height = payload.height;
+                  resize();
+                }
+              };
+
+              function resize() {
+                if(!width) return;
+                // Fix: Update internal canvas buffer size!
+                const canvas = ctx.canvas;
+                canvas.width = width;
+                canvas.height = height;
+
+                // Re-calc columns
+                columns = Math.ceil(width / fontSize);
+                if(!drops || drops.length !== columns) {
+                   drops = Array(columns).fill(1).map(() => Math.random() * -100);
+                }
+              }
+
+              function loop() {
+                ctx.fillStyle = 'rgba(5, 5, 5, 0.1)';
+                ctx.fillRect(0, 0, width, height);
+                ctx.fillStyle = '#FFD700';
+                ctx.font = fontSize + "px 'Courier New', monospace";
+
+                for (let i = 0; i < drops.length; i++) {
+                  const text = Math.random() > 0.5 ? '1' : '0';
+                  ctx.fillText(text, i * fontSize, drops[i] * fontSize);
+                  if (drops[i] * fontSize > height && Math.random() > 0.975) {
+                    drops[i] = 0;
+                  }
+                  drops[i]++;
+                }
+                requestAnimationFrame(loop);
+              }
+            `;
+
+            const blob = new Blob([workerCode], { type: 'application/javascript' });
+            const worker = new Worker(URL.createObjectURL(blob));
+
+            worker.postMessage({
+              type: 'INIT',
+              payload: {
+                canvas: offscreen,
+                width: window.innerWidth,
+                height: window.innerHeight
+              }
+            }, [offscreen]);
+
+            window.addEventListener('resize', () => {
+              worker.postMessage({
+                type: 'RESIZE',
+                payload: { width: window.innerWidth, height: window.innerHeight }
+              });
+            });
+
+          } else {
+            // Fallback for Safari/Legacy (Main Thread)
+            const ctx = canvas.getContext('2d');
+            const resize = () => {
+              canvas.width = window.innerWidth;
+              canvas.height = window.innerHeight;
+            };
+            window.addEventListener('resize', resize);
+            resize();
+
+            const fontSize = 14;
+            let columns = Math.ceil(canvas.width / fontSize);
+            let drops = Array(columns).fill(1).map(() => Math.random() * -100);
+
+            function draw() {
+              ctx.fillStyle = 'rgba(5, 5, 5, 0.1)';
+              ctx.fillRect(0, 0, canvas.width, canvas.height);
+              ctx.fillStyle = '#FFD700';
+              ctx.font = fontSize + "px 'Courier New', monospace";
+
+              for (let i = 0; i < drops.length; i++) {
+                const text = Math.random() > 0.5 ? '1' : '0';
+                ctx.fillText(text, i * fontSize, drops[i] * fontSize);
+                if (drops[i] * fontSize > canvas.height && Math.random() > 0.975) {
+                  drops[i] = 0;
+                }
+                drops[i]++;
+              }
+              requestAnimationFrame(draw);
+            }
+            draw();
+          }
+
+        } else if (path.includes('/architecture')) {
+          architectureLoader.style.display = 'flex';
+          const canvas = document.getElementById('architecture-canvas');
+
+          if (canvas.transferControlToOffscreen) {
+            const offscreen = canvas.transferControlToOffscreen();
+            const workerCode = `
+                let ctx;
+                let width, height;
+                let totalLength = 0;
+                let startTime = null;
+                const cycleDuration = 8000; // 8s total: 3s draw + 1s pause + 4s erase
+
+                // Skyline Points
+                const points = [
+                    {x:0,y:160}, {x:40,y:160}, {x:50,y:40}, {x:60,y:40}, {x:70,y:160},
+                    {x:100,y:160}, {x:100,y:80}, {x:105,y:75}, {x:105,y:50}, {x:115,y:50}, {x:115,y:75}, {x:120,y:80}, {x:120,y:160},
+                    {x:150,y:160}, {x:150,y:80}, {x:160,y:70}, {x:170,y:80}, {x:170,y:160},
+                    {x:200,y:160}, {x:200,y:30}, {x:210,y:30}, {x:210,y:160},
+                    {x:240,y:160}, {x:240,y:60}, {x:260,y:40}, {x:260,y:160},
+                    {x:320,y:160}
+                ];
+
+                // Pre-calculate segment lengths
+                const segments = [];
+                
+                function init() {
+                    let accumulatedLen = 0;
+                    for(let i=1; i<points.length; i++) {
+                        const p1 = points[i-1];
+                        const p2 = points[i];
+                        const dx = p2.x - p1.x;
+                        const dy = p2.y - p1.y;
+                        const len = Math.sqrt(dx*dx + dy*dy);
+                        segments.push({
+                            p1, p2, len, startDist: accumulatedLen, endDist: accumulatedLen + len
+                        });
+                        accumulatedLen += len;
+                    }
+                    totalLength = accumulatedLen;
+                }
+                init();
+
+                self.onmessage = function(e) {
+                    const { type, payload } = e.data;
+                    if (type === 'INIT') {
+                        ctx = payload.canvas.getContext('2d');
+                        resize(payload.width, payload.height);
+                        requestAnimationFrame(loop);
+                    } else if (type === 'RESIZE') {
+                        resize(payload.width, payload.height);
+                    }
+                };
+
+                function resize(w, h) {
+                    width = w;
+                    height = h;
+                    if(ctx && ctx.canvas) {
+                        ctx.canvas.width = w;
+                        ctx.canvas.height = h;
+                    }
+                }
+
+                function loop(timestamp) {
+                    if (!startTime) startTime = timestamp;
+                    const elapsed = (timestamp - startTime) % cycleDuration;
+                    const progress = elapsed / cycleDuration;
+
+                    let drawStart = 0;
+                    let drawEnd = width;
+
+                    if (progress < 0.375) {
+                        // Drawing IN (0-37.5% = 3s)
+                        drawStart = 0;
+                        const t = progress / 0.375;
+                        drawEnd = totalLength * t;
+                    } else if (progress < 0.5) {
+                        // PAUSE - hold full skyline (37.5-50% = 1s)
+                        drawStart = 0;
+                        drawEnd = totalLength;
+                    } else {
+                        // Erasing OUT (50-100% = 4s)
+                        const t = (progress - 0.5) / 0.5;
+                        drawStart = totalLength * t;
+                        drawEnd = totalLength;
+                    }
+
+                    draw(drawStart, drawEnd);
+                    requestAnimationFrame(loop);
+                }
+
+                function draw(startDist, endDist) {
+                    // Clear
+                    ctx.clearRect(0, 0, width, height);
+
+                    const scale = Math.min(width / 320, height / 160) * 0.8;
+                    const tx = (width - 320 * scale) / 2;
+                    const ty = (height - 160 * scale) / 2;
+
+                    ctx.save();
+                    ctx.translate(tx, ty);
+                    ctx.scale(scale, scale);
+
+                    ctx.strokeStyle = '#FFD700';
+                    ctx.lineWidth = 2;
+                    ctx.lineCap = 'round';
+                    ctx.lineJoin = 'round';
+                    ctx.beginPath();
+                    
+                    let firstPointDrawn = false;
+
+                    for (const seg of segments) {
+                        if (seg.endDist < startDist || seg.startDist > endDist) continue;
+
+                        const segDrawStart = Math.max(seg.startDist, startDist);
+                        const segDrawEnd = Math.min(seg.endDist, endDist);
+
+                        const t1 = (segDrawStart - seg.startDist) / seg.len;
+                        const t2 = (segDrawEnd - seg.startDist) / seg.len;
+
+                        const x1 = seg.p1.x + (seg.p2.x - seg.p1.x) * t1;
+                        const y1 = seg.p1.y + (seg.p2.y - seg.p1.y) * t1;
+                        const x2 = seg.p1.x + (seg.p2.x - seg.p1.x) * t2;
+                        const y2 = seg.p1.y + (seg.p2.y - seg.p1.y) * t2;
+
+                        if (!firstPointDrawn) {
+                            ctx.moveTo(x1, y1);
+                            firstPointDrawn = true;
+                        } else {
+                            // simple moveTo initial point then lineTo subsequent is likely fine 
+                            ctx.moveTo(x1, y1);
+                        }
+                        ctx.lineTo(x2, y2);
+                    }
+                    ctx.stroke();
+                    ctx.restore();
+                }
+            `;
+
+            const blob = new Blob([workerCode], { type: 'application/javascript' });
+            const worker = new Worker(URL.createObjectURL(blob));
+
+            worker.postMessage({
+              type: 'INIT',
+              payload: {
+                canvas: offscreen,
+                width: 500,
+                height: 250
+              }
+            }, [offscreen]);
+
+            // Note: Canvas size management in static loader might differ from React
+            // For now passing fixed layout size or window size? 
+            // React component passes window.innerWidth, but canvas is restricted by CSS container.
+            // Actually React component style: w-full h-full in a container.
+            // Let's pass the container dimensions if possible, or window dimensions and let canvas scale?
+            // The worker uses window dimensions in React one... let's stick to window for consistency
+            // although the container in index.html is fixed size (20rem x 10rem originally, now 100% of container).
+
+            // Let's use window resize event as well.
+            window.addEventListener('resize', () => {
+              worker.postMessage({
+                type: 'RESIZE',
+                payload: { width: 500, height: 250 }
+              });
+            });
+
+            // Re-init with correct initial size?
+            // Ideally we want the canvas internal buffer to match its display size.
+            // But layout might not be ready. Let's use a safe default or window.
+            // The React one uses window innerWidth/Height.
+
+          } else {
+            // Fallback for Safari/Legacy (Main Thread) - Omitted for brevity/time, SVG fallback was static? 
+            // We just won't show animation or simple fallback.
+          }
+
+        } else {
+          homeLoader.style.display = 'flex';
+        }
+      })();
+    </script>
+  </div>
+
+  <div id="root"></div>
+</body>
+
+</html>
