@@ -4,6 +4,7 @@ import { Home } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useLoader } from '../components/Layout/Layout';
 import Footer from '../components/Layout/Footer';
+import usePageTitle from '../hooks/usePageTitle';
 
 
 // Image filenames
@@ -34,9 +35,46 @@ const galleryItems = allFilenames
     }));
 
 // Derived thumbnails array for grid rendering (to keep existing map logic mostly compatible, though we'll update it)
+// Derived thumbnails array for grid rendering (to keep existing map logic mostly compatible, though we'll update it)
 const thumbnails = galleryItems.map(item => item.thumb);
 
+const GalleryItem = ({ thumbUrl, fullUrl, index, onSelect }) => {
+    const [isLoaded, setIsLoaded] = useState(false);
+    const [shouldLoad, setShouldLoad] = useState(index < 6);
+
+    return (
+        <motion.div
+            initial={{ opacity: 0 }}
+            whileInView={{ opacity: 1 }}
+            viewport={{ once: true, margin: "100px" }} // Trigger animation
+            onViewportEnter={() => setShouldLoad(true)} // Trigger network request
+            transition={{ duration: 0.5, ease: "easeOut" }}
+            className="relative aspect-[4/3] rounded-xl overflow-hidden cursor-pointer group bg-neutral-900"
+            onClick={() => onSelect(fullUrl)}
+        >
+            {shouldLoad && (
+                <img
+                    src={thumbUrl}
+                    alt={`Architecture ${index + 1}`}
+                    className={`w-full h-full object-cover transition-all duration-700 ease-out
+                        ${isLoaded ? 'opacity-100' : 'opacity-0'}
+                        group-hover:scale-110`}
+                    decoding="async"
+                    onLoad={() => setIsLoaded(true)}
+                />
+            )}
+
+            {/* Overlay */}
+            <div className="absolute inset-0 bg-black/20 group-hover:bg-black/0 transition-colors duration-500" />
+
+            {/* Border glow on hover */}
+            <div className="absolute inset-0 border-2 border-white/0 group-hover:border-[var(--accent-color)]/30 rounded-xl transition-all duration-300" />
+        </motion.div>
+    );
+};
+
 const Architecture = () => {
+    usePageTitle('Architecture | Nigel Paine');
     const navigate = useNavigate();
     const { setAreAssetsLoaded } = useLoader();
     const [selectedImage, setSelectedImage] = useState(null);
@@ -651,34 +689,13 @@ const Architecture = () => {
                 {/* Image Grid */}
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 pb-20 [&>*:last-child:nth-child(3n+1)]:lg:col-start-2 [&>*:last-child:nth-child(2n+1)]:md:col-span-2 [&>*:last-child:nth-child(2n+1)]:lg:col-span-1 [&>*:last-child:nth-child(3n+1)]:lg:col-span-1">
                     {thumbnails.map((thumbUrl, index) => (
-                        <motion.div
+                        <GalleryItem
                             key={thumbUrl}
-                            initial={{ opacity: 0, scale: 0.95 }}
-                            animate={{ opacity: 1, scale: 1 }}
-                            transition={{ delay: index * 0.05, duration: 0.4 }}
-                            className="relative aspect-[4/3] rounded-xl overflow-hidden cursor-pointer group"
-                            onClick={() => {
-                                handleImageChange(galleryItems[index].full);
-                            }}
-                        >
-                            <img
-                                src={thumbUrl}
-                                alt={`Architecture ${index + 1}`}
-                                className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700 ease-out"
-                                loading={index < 6 ? "eager" : "lazy"}
-                                decoding="async"
-                                style={{
-                                    contentVisibility: 'auto',
-                                    willChange: index < 12 ? 'transform' : 'auto'
-                                }}
-                            />
-
-                            {/* Overlay */}
-                            <div className="absolute inset-0 bg-black/20 group-hover:bg-black/0 transition-colors duration-500" />
-
-                            {/* Border glow on hover */}
-                            <div className="absolute inset-0 border-2 border-white/0 group-hover:border-[var(--accent-color)]/30 rounded-xl transition-all duration-300" />
-                        </motion.div>
+                            thumbUrl={thumbUrl}
+                            fullUrl={galleryItems[index].full}
+                            index={index}
+                            onSelect={handleImageChange}
+                        />
                     ))}
                 </div>
 

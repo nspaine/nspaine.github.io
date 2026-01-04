@@ -145,28 +145,67 @@ body {
 }
 
 /* Scrollbar Styling */
-.scrollbar-custom {
-  scrollbar-width: thin;
-  scrollbar-color: var(--accent-color) rgba(10, 10, 10, 0.5);
+/* Scrollbar Styling - Force WebKit for full customization */
+
+/* Scrollbar Styling - Force WebKit for full customization */
+
+/* Global Scrollbar Reset */
+::-webkit-scrollbar {
+  width: 14px;
+  /* Wider for better clickability */
+  height: 14px;
 }
 
-.scrollbar-custom::-webkit-scrollbar {
-  width: 8px;
+::-webkit-scrollbar-track {
+  background: #0a0a0a;
+  border-left: none;
+  /* Removed "white line" */
 }
 
-.scrollbar-custom::-webkit-scrollbar-track {
-  background: rgba(10, 10, 10, 0.5);
-  border-left: 1px solid rgba(255, 215, 0, 0.1);
-}
-
-.scrollbar-custom::-webkit-scrollbar-thumb {
+::-webkit-scrollbar-thumb {
   background-color: var(--accent-color);
-  box-shadow: 0 0 10px rgba(255, 215, 0, 0.5);
+  border: 4px solid #0a0a0a;
+  /* Thicker border to make the thumb look like a floating thin pill */
+  border-radius: 99px;
+  background-clip: padding-box;
 }
 
-.scrollbar-custom::-webkit-scrollbar-thumb:hover {
+::-webkit-scrollbar-thumb:hover {
   background-color: #ffe44d;
-  box-shadow: 0 0 15px rgba(255, 215, 0, 0.8);
+}
+
+/* Scrollbar Buttons (Arrows) */
+::-webkit-scrollbar-button {
+  display: block;
+  height: 14px;
+  width: 14px;
+  background-color: #0a0a0a;
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: 10px;
+}
+
+/* Single Up Arrow at Top */
+::-webkit-scrollbar-button:single-button:vertical:decrement {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23FFD700'%3E%3Cpath d='M24 22h-24l12-20z'/%3E%3C/svg%3E");
+  display: block;
+}
+
+/* Single Down Arrow at Bottom */
+::-webkit-scrollbar-button:single-button:vertical:increment {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23FFD700'%3E%3Cpath d='M12 21l-12-18h24z'/%3E%3C/svg%3E");
+  display: block;
+}
+
+/* Hide any other button combinations (like double arrows) */
+::-webkit-scrollbar-button:vertical:start:increment,
+::-webkit-scrollbar-button:vertical:end:decrement {
+  display: none;
+}
+
+/* Specific Utility class if needed, but global covers it */
+.scrollbar-custom {
+  /* No standard properties to ensure WebKit styles take precedence */
 }
 
 /* Hide Scrollbar Utility */

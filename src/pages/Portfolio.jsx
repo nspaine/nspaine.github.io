@@ -5,8 +5,10 @@ import CircuitNode from '../components/Portfolio/CircuitNode';
 import { projects } from '../data/projects.jsx';
 import Footer from '../components/Layout/Footer';
 import { useLoader } from '../components/Layout/Layout';
+import usePageTitle from '../hooks/usePageTitle';
 
 const Portfolio = () => {
+    usePageTitle('Portfolio | Nigel Paine');
     const navigate = useNavigate();
     const { setAreAssetsLoaded } = useLoader();
     const containerRef = useRef(null);

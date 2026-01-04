@@ -35,14 +35,14 @@ const CircuitNode = ({ project, index, isLast }) => {
             />
 
             {/* NODE CONNECTION LINE (Desktop) - Branching Trace from Center to Card */}
-            <div className={`absolute top-[39px] left-1/2 h-[2px] bg-[#FFD700] shadow-[0_0_8px_#FFD700]
+            <div className={`absolute top-[38px] left-1/2 h-[4px] bg-[#FFD700] shadow-[0_0_8px_#FFD700]
                 ${isEven ? 'origin-left' : '-translate-x-full origin-right'}
                 w-[10%]
                 z-0 hidden md:block`}
             />
 
             {/* NODE CONNECTION LINE (Mobile) - Short trace from left-aligned bus to card */}
-            <div className="absolute top-[39px] left-8 w-8 h-[2px] bg-[#FFD700] shadow-[0_0_8px_#FFD700] z-0 md:hidden origin-left" />
+            <div className="absolute top-[38px] left-8 w-8 h-[4px] bg-[#FFD700] shadow-[0_0_8px_#FFD700] z-0 md:hidden origin-left" />
 
             {/* CONTENT CARD */}
             <motion.div

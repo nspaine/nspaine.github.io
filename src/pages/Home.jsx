@@ -2,10 +2,12 @@ import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Linkedin, ChevronLeft, ChevronRight, User, Building2, Cpu } from 'lucide-react';
 import Footer from '../components/Layout/Footer';
+import usePageTitle from '../hooks/usePageTitle';
 
 import profileImg from '../assets/profile-pixel.webp';
 
 const Home = () => {
+    usePageTitle('Home | Nigel Paine');
     const navigate = useNavigate();
 
     return (
