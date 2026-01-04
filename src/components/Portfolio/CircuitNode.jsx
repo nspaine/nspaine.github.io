@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ChevronDown, ExternalLink, Code } from 'lucide-react';
+import { ChevronDown, ExternalLink } from 'lucide-react';
 
 const CircuitNode = ({ project, index, isLast }) => {
     const [isExpanded, setIsExpanded] = useState(false);
@@ -54,8 +54,8 @@ const CircuitNode = ({ project, index, isLast }) => {
                 <div
                     className={`
                         p-6 3xl:p-10 rounded-xl bg-black/90
-                        shadow-[0_0_15px_rgba(0,0,0,0.5)]
-                        hover:shadow-[0_0_25px_var(--accent-color-dim)]
+                        ${isExpanded ? 'shadow-[0_0_25px_var(--accent-color-dim)]' : 'shadow-[0_0_15px_rgba(0,0,0,0.5)]'}
+                        md:hover:shadow-[0_0_25px_var(--accent-color-dim)]
                         transition-[box-shadow,border-color] duration-300 cursor-pointer
                         [contain:paint]
                         overflow-hidden
@@ -187,7 +187,7 @@ const CircuitNode = ({ project, index, isLast }) => {
 
                 </div>
             </motion.div>
-        </motion.div>
+        </motion.div >
     );
 };
 

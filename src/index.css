@@ -150,57 +150,74 @@ body {
 /* Scrollbar Styling - Force WebKit for full customization */
 
 /* Global Scrollbar Reset */
-::-webkit-scrollbar {
-  width: 14px;
-  /* Wider for better clickability */
-  height: 14px;
+/* Desktop Scrollbar (Custom Gold) */
+@media (min-width: 768px) {
+  ::-webkit-scrollbar {
+    width: 14px;
+    /* Wider for better clickability */
+    height: 14px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: #0a0a0a;
+    border-left: none;
+    /* Removed "white line" */
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background-color: var(--accent-color);
+    border: 4px solid #0a0a0a;
+    /* Thicker border to make the thumb look like a floating thin pill */
+    border-radius: 99px;
+    background-clip: padding-box;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    background-color: #ffe44d;
+  }
+
+  /* Scrollbar Buttons (Arrows) */
+  ::-webkit-scrollbar-button {
+    display: block;
+    height: 14px;
+    width: 14px;
+    background-color: #0a0a0a;
+    background-repeat: no-repeat;
+    background-position: center;
+    background-size: 10px;
+  }
+
+  /* Single Up Arrow at Top */
+  ::-webkit-scrollbar-button:single-button:vertical:decrement {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23FFD700'%3E%3Cpath d='M24 22h-24l12-20z'/%3E%3C/svg%3E");
+    display: block;
+  }
+
+  /* Single Down Arrow at Bottom */
+  ::-webkit-scrollbar-button:single-button:vertical:increment {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23FFD700'%3E%3Cpath d='M12 21l-12-18h24z'/%3E%3C/svg%3E");
+    display: block;
+  }
+
+  /* Hide any other button combinations (like double arrows) */
+  ::-webkit-scrollbar-button:vertical:start:increment,
+  ::-webkit-scrollbar-button:vertical:end:decrement {
+    display: none;
+  }
 }
 
-::-webkit-scrollbar-track {
-  background: #0a0a0a;
-  border-left: none;
-  /* Removed "white line" */
-}
+/* Mobile Scrollbar (Hidden) */
+@media (max-width: 767px) {
+  ::-webkit-scrollbar {
+    display: none;
+  }
 
-::-webkit-scrollbar-thumb {
-  background-color: var(--accent-color);
-  border: 4px solid #0a0a0a;
-  /* Thicker border to make the thumb look like a floating thin pill */
-  border-radius: 99px;
-  background-clip: padding-box;
-}
-
-::-webkit-scrollbar-thumb:hover {
-  background-color: #ffe44d;
-}
-
-/* Scrollbar Buttons (Arrows) */
-::-webkit-scrollbar-button {
-  display: block;
-  height: 14px;
-  width: 14px;
-  background-color: #0a0a0a;
-  background-repeat: no-repeat;
-  background-position: center;
-  background-size: 10px;
-}
-
-/* Single Up Arrow at Top */
-::-webkit-scrollbar-button:single-button:vertical:decrement {
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23FFD700'%3E%3Cpath d='M24 22h-24l12-20z'/%3E%3C/svg%3E");
-  display: block;
-}
-
-/* Single Down Arrow at Bottom */
-::-webkit-scrollbar-button:single-button:vertical:increment {
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23FFD700'%3E%3Cpath d='M12 21l-12-18h24z'/%3E%3C/svg%3E");
-  display: block;
-}
-
-/* Hide any other button combinations (like double arrows) */
-::-webkit-scrollbar-button:vertical:start:increment,
-::-webkit-scrollbar-button:vertical:end:decrement {
-  display: none;
+  * {
+    -ms-overflow-style: none;
+    /* IE and Edge */
+    scrollbar-width: none;
+    /* Firefox */
+  }
 }
 
 /* Specific Utility class if needed, but global covers it */
