@@ -49,19 +49,19 @@ const Home = () => {
                 </div>
 
                 {/* MOBILE: Buttons Row */}
-                <div className="w-full md:hidden flex flex-row justify-center items-center gap-4 relative z-50">
-                    {/* Left Button: Portfolio */}
+                <div className="w-full md:hidden flex flex-col justify-center items-center gap-4 relative z-50 pb-8">
+                    {/* Top Button: Portfolio */}
                     <div
-                        className="cursor-pointer group flex items-center justify-center gap-3 p-3 transition-transform hover:translate-x-1 bg-black/70 rounded-lg backdrop-blur-sm border border-transparent hover:border-[var(--accent-color)] w-auto min-w-[140px] px-4 h-14"
+                        className="cursor-pointer group flex items-center justify-between px-6 py-4 transition-transform hover:translate-x-1 bg-black/70 rounded-lg backdrop-blur-sm border border-transparent hover:border-[var(--accent-color)] w-64 h-16 shadow-lg"
                         onClick={() => navigate('/portfolio')}
                     >
-                        <Cpu className="w-6 h-6 text-[var(--accent-color)] shrink-0" />
                         <span className="text-white font-bold text-sm uppercase tracking-wider">Portfolio</span>
+                        <Cpu className="w-6 h-6 text-[var(--accent-color)] shrink-0" />
                     </div>
 
-                    {/* Right Button: Architecture */}
+                    {/* Bottom Button: Architecture */}
                     <div
-                        className="cursor-pointer group flex items-center justify-center gap-3 p-3 transition-transform hover:-translate-x-1 bg-black/70 rounded-lg backdrop-blur-sm border border-transparent hover:border-[var(--accent-color)] w-auto min-w-[140px] px-4 h-14"
+                        className="cursor-pointer group flex items-center justify-between px-6 py-4 transition-transform hover:translate-x-1 bg-black/70 rounded-lg backdrop-blur-sm border border-transparent hover:border-[var(--accent-color)] w-64 h-16 shadow-lg"
                         onClick={() => navigate('/architecture')}
                     >
                         <span className="text-white font-bold text-sm uppercase tracking-wider">Architecture</span>

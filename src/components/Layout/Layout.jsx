@@ -147,13 +147,13 @@ const Layout = ({ children }) => {
 
     return (
         <LoaderContext.Provider value={{ setAreAssetsLoaded, startMinTimer }}>
-            <div className={`h-screen w-screen relative overflow-hidden flex flex-col ${(isHomePage || isPortfolio || isArchitecture) ? 'cursor-probe' : ''}`}>
+            <div className={`h-[100dvh] w-screen relative overflow-hidden flex flex-col ${(isHomePage || isPortfolio || isArchitecture) ? 'cursor-probe' : ''}`}>
 
                 {/* Background */}
                 {(!isPortfolio && !isArchitecture) && <CircuitryBackground />}
 
                 {/* Main Content */}
-                <main className="flex-grow relative z-10 w-full h-full">
+                <main className="flex-grow relative z-10 w-full h-full overflow-hidden">
                     {children}
                 </main>
 
