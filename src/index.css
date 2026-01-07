@@ -5,6 +5,7 @@
 @tailwind utilities;
 
 :root {
+  color-scheme: dark;
   --bg-primary: #050505;
   --bg-secondary: #0a0a0a;
   --text-primary: #ffffff;
@@ -206,19 +207,7 @@ body {
   }
 }
 
-/* Mobile Scrollbar (Hidden) */
-@media (max-width: 767px) {
-  ::-webkit-scrollbar {
-    display: none;
-  }
 
-  * {
-    -ms-overflow-style: none;
-    /* IE and Edge */
-    scrollbar-width: none;
-    /* Firefox */
-  }
-}
 
 /* Specific Utility class if needed, but global covers it */
 .scrollbar-custom {

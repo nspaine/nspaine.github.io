@@ -65,7 +65,7 @@ const GalleryItem = ({ thumbUrl, fullUrl, index, onSelect }) => {
             )}
 
             {/* Overlay */}
-            <div className="absolute inset-0 bg-black/20 group-hover:bg-black/0 transition-colors duration-500" />
+            <div className="absolute inset-0 bg-transparent md:bg-black/20 group-hover:bg-black/0 transition-colors duration-500" />
 
             {/* Border glow on hover */}
             <div className="absolute inset-0 border-2 border-white/0 group-hover:border-[var(--accent-color)]/30 rounded-xl transition-all duration-300" />
