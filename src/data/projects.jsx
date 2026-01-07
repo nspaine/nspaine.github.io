@@ -26,7 +26,7 @@ export const projects = [
     {
         id: "rust-network-analyzer",
         title: "Matter Network Analyzer & Smart Bridge",
-        fullDescription: "Develop Matter over Thread network analyzer and smart bridge using Rust, FreeRTOS, and Embassy (Async RTOS). Utilize STM32H755 for Ethernet, TI CC2652P for 802.15.4 transceiver, Nordic nRF54L and ESP32-C6 for Wi-Fi and BLE.",
+        fullDescription: "Developing a Matter-over-Thread network analyzer and smart bridge using Rust, FreeRTOS, and Embassy (async RTOS). Utilizing STM32H755 for Ethernet, TI CC2652P for 802.15.4 transceiver, Nordic nRF54L and ESP32-C6 for Wi-Fi and BLE.",
         tech: ["Rust", "STM32H755", "FreeRTOS", "Matter", "Thread", "Wi-Fi", "BLE", "Ethernet", "Embassy", "CC2652P", "nRF54L", "ESP32-C6", "802.15.4"],
         icon: <Wifi />,
         image: rustImg,

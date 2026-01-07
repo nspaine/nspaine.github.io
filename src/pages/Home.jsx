@@ -1,6 +1,6 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Linkedin, ChevronLeft, ChevronRight, Building2, Cpu } from 'lucide-react';
+import { Linkedin, Building2, Cpu } from 'lucide-react';
 import Footer from '../components/Layout/Footer';
 import usePageTitle from '../hooks/usePageTitle';
 
@@ -52,32 +52,33 @@ const Home = () => {
                 <div className="w-full md:hidden flex flex-row justify-center items-center gap-4 relative z-50">
                     {/* Left Button: Portfolio */}
                     <div
-                        className="cursor-pointer group flex items-center p-3 transition-transform hover:translate-x-1 bg-black/70 rounded-lg backdrop-blur-sm border border-transparent hover:border-[var(--accent-color)] w-32 justify-between px-4 h-14"
+                        className="cursor-pointer group flex items-center justify-center gap-3 p-3 transition-transform hover:translate-x-1 bg-black/70 rounded-lg backdrop-blur-sm border border-transparent hover:border-[var(--accent-color)] w-auto min-w-[140px] px-4 h-14"
                         onClick={() => navigate('/portfolio')}
                     >
-                        <ChevronLeft className="w-8 h-8 text-[var(--accent-color)] shrink-0" />
-                        <Cpu className="w-8 h-8 text-[var(--accent-color)] shrink-0" />
+                        <Cpu className="w-6 h-6 text-[var(--accent-color)] shrink-0" />
+                        <span className="text-white font-bold text-sm uppercase tracking-wider">Portfolio</span>
                     </div>
 
                     {/* Right Button: Architecture */}
                     <div
-                        className="cursor-pointer group flex items-center p-3 transition-transform hover:-translate-x-1 bg-black/70 rounded-lg backdrop-blur-sm border border-transparent hover:border-[var(--accent-color)] w-32 justify-between px-4 h-14"
+                        className="cursor-pointer group flex items-center justify-center gap-3 p-3 transition-transform hover:-translate-x-1 bg-black/70 rounded-lg backdrop-blur-sm border border-transparent hover:border-[var(--accent-color)] w-auto min-w-[140px] px-4 h-14"
                         onClick={() => navigate('/architecture')}
                     >
-                        <Building2 className="w-8 h-8 text-[var(--accent-color)] shrink-0" />
-                        <ChevronRight className="w-8 h-8 text-[var(--accent-color)] shrink-0" />
+                        <span className="text-white font-bold text-sm uppercase tracking-wider">Architecture</span>
+                        <Building2 className="w-6 h-6 text-[var(--accent-color)] shrink-0" />
                     </div>
                 </div>
 
                 {/* DESKTOP: Original 3-Column Layout */}
                 {/* 1. LEFT COLUMN: Software Portfolio */}
-                <div className="hidden md:flex flex-1 justify-start items-center relative z-50 min-w-0">
+                <div className="hidden md:flex flex-1 justify-start items-center relative z-50 min-w-0 pl-10">
                     <div
-                        className="cursor-pointer group flex items-center p-3 lg:p-4 transition-transform hover:translate-x-1 md:hover:translate-x-2 bg-black/70 rounded-lg backdrop-blur-sm border border-transparent hover:border-[var(--accent-color)] w-32 lg:w-44 justify-between px-4 lg:px-6"
+                        className="cursor-pointer group flex items-center justify-center gap-4 p-3 lg:p-4 transition-transform hover:translate-x-1 md:hover:translate-x-2 bg-black/70 rounded-lg backdrop-blur-sm border border-transparent hover:border-[var(--accent-color)] w-auto min-w-[200px] px-6"
                         onClick={() => navigate('/portfolio')}
                     >
-                        <ChevronLeft className="w-12 h-12 lg:w-16 lg:h-16 text-[var(--accent-color)] shrink-0" />
-                        <Cpu className="w-12 h-12 lg:w-16 lg:h-16 text-[var(--accent-color)] shrink-0" />
+                        <Cpu className="w-10 h-10 lg:w-12 lg:h-12 text-[var(--accent-color)] shrink-0" />
+                        <span className="text-white font-bold text-lg lg:text-xl uppercase tracking-widest hidden lg:block">Portfolio</span>
+                        <span className="text-white font-bold text-base uppercase tracking-widest lg:hidden">Portfolio</span>
                     </div>
                 </div>
 
@@ -114,13 +115,14 @@ const Home = () => {
                 </div>
 
                 {/* 3. RIGHT COLUMN: Architecture Gallery (Desktop Only) */}
-                <div className="hidden md:flex flex-1 justify-end items-center relative z-50 min-w-0">
+                <div className="hidden md:flex flex-1 justify-end items-center relative z-50 min-w-0 pr-10">
                     <div
-                        className="cursor-pointer group flex items-center p-3 lg:p-4 transition-transform hover:-translate-x-1 md:hover:-translate-x-2 bg-black/70 rounded-lg backdrop-blur-sm border border-transparent hover:border-[var(--accent-color)] w-32 lg:w-44 justify-between px-4 lg:px-6"
+                        className="cursor-pointer group flex items-center justify-center gap-4 p-3 lg:p-4 transition-transform hover:-translate-x-1 md:hover:-translate-x-2 bg-black/70 rounded-lg backdrop-blur-sm border border-transparent hover:border-[var(--accent-color)] w-auto min-w-[200px] px-6"
                         onClick={() => navigate('/architecture')}
                     >
-                        <Building2 className="w-12 h-12 lg:w-16 lg:h-16 text-[var(--accent-color)] shrink-0" />
-                        <ChevronRight className="w-12 h-12 lg:w-16 lg:h-16 text-[var(--accent-color)] shrink-0" />
+                        <span className="text-white font-bold text-lg lg:text-xl uppercase tracking-widest hidden lg:block">Architecture</span>
+                        <span className="text-white font-bold text-base uppercase tracking-widest lg:hidden">Arch</span>
+                        <Building2 className="w-10 h-10 lg:w-12 lg:h-12 text-[var(--accent-color)] shrink-0" />
                     </div>
                 </div>
             </div>

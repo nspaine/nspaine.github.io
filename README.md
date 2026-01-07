@@ -61,7 +61,7 @@ The built files will be in the `docs/` folder.
 ## 📁 Project Structure
 
 ```
-personal-website/
+nspaine.github.io/
 ├── src/
 │   ├── components/
 │   │   ├── Background/       # Interactive circuit background

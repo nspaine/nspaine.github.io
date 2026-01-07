@@ -219,13 +219,8 @@ const CircuitryBackground = () => {
         };
 
         const handleMouseMove = (e) => {
-            // Desktop: Hover only updates spotlight, does NOT spawn particles
-            handlePassiveMove(e.clientX, e.clientY);
-
-            // If holding down while moving, treat as active interaction
-            if (mouseRef.current.mouseDown) {
-                handleActiveInteraction(e.clientX, e.clientY);
-            }
+            // Desktop: Movement spawns particles
+            handleActiveInteraction(e.clientX, e.clientY);
         };
 
         const handleMouseDown = (e) => {
