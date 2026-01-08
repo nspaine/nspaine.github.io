@@ -348,7 +348,8 @@ const Architecture = () => {
 
         const handleSwipe = () => {
             // Don't navigate if image is zoomed in (user is panning)
-            if (zoomLevel > 1) {
+            // Use REF to check current zoom without triggering re-render/effect cleanup
+            if (zoomLevelRef.current > 1) {
                 return;
             }
 
@@ -376,7 +377,7 @@ const Architecture = () => {
             window.removeEventListener('touchstart', handleTouchStartSwipe);
             window.removeEventListener('touchend', handleTouchEndSwipe);
         };
-    }, [selectedImage, fullResImages, zoomLevel]);
+    }, [selectedImage, fullResImages]); // Removed zoomLevel dependency to prevent effect re-run during pinch
 
     // Reset drag distance + state AND CLAMP PAN position when zoom changes
     useLayoutEffect(() => {
