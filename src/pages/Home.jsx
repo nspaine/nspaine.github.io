@@ -20,7 +20,7 @@ const Home = () => {
                 {/* MOBILE: Profile Card First (Full Width) */}
                 <div className="w-full md:hidden shrink-0 relative z-[100] px-4 pt-4 flex justify-center">
                     <div className="bg-black/70 p-6 rounded-2xl text-center w-full max-w-sm shadow-[0_0_50px_rgba(255,215,0,0.15)] backdrop-blur-sm">
-                        <div className="w-24 h-24 mx-auto rounded-full overflow-hidden border-2 border-[var(--accent-color)] mb-4 shadow-[0_0_30px_rgba(255,215,0,0.3)] bg-neutral-900 flex items-center justify-center">
+                        <div className="w-40 h-40 mx-auto rounded-full overflow-hidden border-2 border-[var(--accent-color)] mb-4 shadow-[0_0_30px_rgba(255,215,0,0.3)] bg-neutral-900 flex items-center justify-center">
                             <img
                                 src={profileImg}
                                 alt="Nigel Paine"
