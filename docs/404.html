@@ -49,11 +49,11 @@
       animation: squareWave 2s linear infinite;
     }
   </style>
-  <script type="module" crossorigin src="/assets/index-9VGMyKPw.js"></script>
+  <script type="module" crossorigin src="/assets/index-BAsFH_dO.js"></script>
   <link rel="modulepreload" crossorigin href="/assets/vendor-react-6ah5gmXX.js">
   <link rel="modulepreload" crossorigin href="/assets/vendor-framer-SwFvxf7O.js">
   <link rel="modulepreload" crossorigin href="/assets/vendor-icons-BNdOiyyC.js">
-  <link rel="stylesheet" crossorigin href="/assets/index-ClifKBZY.css">
+  <link rel="stylesheet" crossorigin href="/assets/index-DEpiPFtd.css">
 </head>
 
 <body>
@@ -81,9 +81,7 @@
 
     <!-- Portfolio Loader Content -->
     <div id="loader-portfolio"
-      style="display: none; align-items: center; justify-content: center; width: 100%; height: 100%;">
-      <canvas id="binary-canvas"
-        style="position: absolute; inset: 0; width: 100%; height: 100%; opacity: 0.8;"></canvas>
+      style="display: none; flex-direction: column; align-items: center; justify-content: center; width: 100%; height: 100%;">
       <div
         style="position: relative; z-index: 10; display: flex; flex-direction: column; align-items: center; gap: 1rem;">
         <p
@@ -133,119 +131,48 @@
 
         if (path.includes('/portfolio')) {
           portfolioLoader.style.display = 'flex';
-          const canvas = document.getElementById('binary-canvas');
-          // ... (Existing worker logic for portfolio) ...
-          // --- INLINE WORKER FOR ZERO BOOT LAG ---
-          // Runs the animation off-main-thread while React hydrates
-          if (canvas.transferControlToOffscreen) {
-            const offscreen = canvas.transferControlToOffscreen();
 
-            const workerCode = `
-              let ctx;
-              let width, height;
-              let columns;
-              let drops;
-              let fontSize = 14;
+          // Create 10x10 binary grid above loading text
+          // Create 10x10 binary grid above loading text
+          const gridContainer = document.createElement('div');
+          gridContainer.id = 'binary-grid';
+          // Use Tailwind classes for grid layout and spacing (matches React component)
+          gridContainer.className = 'grid grid-cols-10 gap-1 sm:gap-1.5 md:gap-2 lg:gap-2.5 xl:gap-3';
+          gridContainer.style.cssText = 'display: grid;';
 
-              self.onmessage = function(e) {
-                const { type, payload } = e.data;
-                if (type === 'INIT') {
-                  const canvas = payload.canvas;
-                  ctx = canvas.getContext('2d');
-                  width = payload.width;
-                  height = payload.height;
-                  resize();
-                  loop();
-                } else if (type === 'RESIZE') {
-                  width = payload.width;
-                  height = payload.height;
-                  resize();
-                }
-              };
+          // Ensure parent has correct gap (gap-8 = 2rem)
+          portfolioLoader.style.gap = '2rem';
 
-              function resize() {
-                if(!width) return;
-                // Fix: Update internal canvas buffer size!
-                const canvas = ctx.canvas;
-                canvas.width = width;
-                canvas.height = height;
-
-                // Re-calc columns
-                columns = Math.ceil(width / fontSize);
-                if(!drops || drops.length !== columns) {
-                   drops = Array(columns).fill(1).map(() => Math.random() * -100);
-                }
-              }
-
-              function loop() {
-                ctx.fillStyle = 'rgba(5, 5, 5, 0.1)';
-                ctx.fillRect(0, 0, width, height);
-                ctx.fillStyle = '#FFD700';
-                ctx.font = fontSize + "px 'Courier New', monospace";
-
-                for (let i = 0; i < drops.length; i++) {
-                  const text = Math.random() > 0.5 ? '1' : '0';
-                  ctx.fillText(text, i * fontSize, drops[i] * fontSize);
-                  if (drops[i] * fontSize > height && Math.random() > 0.975) {
-                    drops[i] = 0;
-                  }
-                  drops[i]++;
-                }
-                requestAnimationFrame(loop);
-              }
-            `;
-
-            const blob = new Blob([workerCode], { type: 'application/javascript' });
-            const worker = new Worker(URL.createObjectURL(blob));
-
-            worker.postMessage({
-              type: 'INIT',
-              payload: {
-                canvas: offscreen,
-                width: window.innerWidth,
-                height: window.innerHeight
-              }
-            }, [offscreen]);
-
-            window.addEventListener('resize', () => {
-              worker.postMessage({
-                type: 'RESIZE',
-                payload: { width: window.innerWidth, height: window.innerHeight }
-              });
-            });
-
-          } else {
-            // Fallback for Safari/Legacy (Main Thread)
-            const ctx = canvas.getContext('2d');
-            const resize = () => {
-              canvas.width = window.innerWidth;
-              canvas.height = window.innerHeight;
-            };
-            window.addEventListener('resize', resize);
-            resize();
-
-            const fontSize = 14;
-            let columns = Math.ceil(canvas.width / fontSize);
-            let drops = Array(columns).fill(1).map(() => Math.random() * -100);
-
-            function draw() {
-              ctx.fillStyle = 'rgba(5, 5, 5, 0.1)';
-              ctx.fillRect(0, 0, canvas.width, canvas.height);
-              ctx.fillStyle = '#FFD700';
-              ctx.font = fontSize + "px 'Courier New', monospace";
-
-              for (let i = 0; i < drops.length; i++) {
-                const text = Math.random() > 0.5 ? '1' : '0';
-                ctx.fillText(text, i * fontSize, drops[i] * fontSize);
-                if (drops[i] * fontSize > canvas.height && Math.random() > 0.975) {
-                  drops[i] = 0;
-                }
-                drops[i]++;
-              }
-              requestAnimationFrame(draw);
-            }
-            draw();
+          const cells = [];
+          for (let i = 0; i < 100; i++) {
+            const cell = document.createElement('div');
+            cell.textContent = Math.random() > 0.5 ? '1' : '0';
+            // Use Tailwind classes for responsive text size (matches React component)
+            cell.className = 'text-[var(--accent-color)] text-sm sm:text-base md:text-lg lg:text-xl xl:text-2xl font-bold';
+            // Only font-family and alignment in inline style. REMOVED font-size/line-height to let classes win.
+            cell.style.cssText = 'color: #FFD700; font-family: "Orbitron", monospace; text-align: center;';
+            gridContainer.appendChild(cell);
+            cells.push(cell);
           }
+
+          // Insert grid before the loading text
+          const loaderContent = portfolioLoader.querySelector('div[style*="z-index: 10"]');
+          portfolioLoader.insertBefore(gridContainer, loaderContent);
+
+          // Randomly flip cells
+          setInterval(() => {
+            const numFlips = Math.floor(Math.random() * 3) + 1;
+            for (let i = 0; i < numFlips; i++) {
+              const randomIndex = Math.floor(Math.random() * cells.length);
+              const cell = cells[randomIndex];
+              cell.textContent = cell.textContent === '0' ? '1' : '0';
+              cell.style.opacity = '0.5';
+              setTimeout(() => {
+                cell.style.opacity = '1';
+              }, 50);
+            }
+          }, 100);
+
 
         } else if (path.includes('/architecture')) {
           architectureLoader.style.display = 'flex';
