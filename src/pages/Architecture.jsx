@@ -428,16 +428,10 @@ const Architecture = () => {
                 return;
             }
 
-            // Detect input type (mouse vs touch)
-            // Use pointerType if available, fallback to touch detection
-            const isTouch = (e.nativeEvent && e.nativeEvent.pointerType === 'touch') ||
-                ('ontouchstart' in window && navigator.maxTouchPoints > 0);
+            // Robustly detect touch-primary devices using CSS Media Query
+            const isTouchPrimary = window.matchMedia('(pointer: coarse)').matches;
 
-            // However, pointerType 'mouse' is definitive for mouse users even on touch devices
-            // If explicit mouse click, always single-click zoom
-            const isMouse = e.nativeEvent && e.nativeEvent.pointerType === 'mouse';
-
-            if (isMouse || !isTouch) {
+            if (!isTouchPrimary) {
                 // Desktop/Mouse: Single click to toggle zoom
                 if (zoomLevel === 1) {
                     setZoomLevel(2);
