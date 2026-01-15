@@ -751,119 +751,112 @@ const Architecture = () => {
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
                         exit={{ opacity: 0 }}
-                        className="fixed inset-0 z-50 flex flex-col bg-black touch-none select-none"
+                        className="fixed inset-0 z-50 flex items-center justify-center bg-black touch-none select-none p-4 md:p-6"
                         data-lightbox="true"
                         data-backdrop="true"
                         onClick={handleBackdropClick}
                         onMouseDown={handleMouseDown}
-                        onDragStart={(e) => e.preventDefault()} // Block native drag
+                        onDragStart={(e) => e.preventDefault()}
                     >
-                        {/* Header - Close Button Area */}
-                        <div className="w-full flex-none min-h-[80px] p-6 flex justify-end items-start z-20 pointer-events-none" data-backdrop="true">
+                        {/* Close Button - Top Right, aligned with nav buttons */}
+                        <button
+                            onClick={(e) => {
+                                e.stopPropagation();
+                                closeLightbox();
+                            }}
+                            className="absolute top-4 md:top-6 right-4 md:right-6 w-12 h-12 rounded-full bg-black/50 border-2 border-[var(--accent-color)] text-[var(--accent-color)] active:bg-[var(--accent-color)] active:text-black transition-all duration-300 flex items-center justify-center z-20 [@media(hover:hover)]:hover:bg-[var(--accent-color)] [@media(hover:hover)]:hover:text-black"
+                            aria-label="Close"
+                        >
+                            <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+                                <line x1="4" y1="4" x2="16" y2="16" />
+                                <line x1="16" y1="4" x2="4" y2="16" />
+                            </svg>
+                        </button>
+
+                        {/* Previous Button */}
+                        {fullResImages.indexOf(selectedImage) > 0 && zoomLevel === 1 && (
                             <button
                                 onClick={(e) => {
                                     e.stopPropagation();
-                                    closeLightbox();
+                                    e.currentTarget.blur();
+                                    setSlideDirection(-1);
+                                    const currentIndex = fullResImages.indexOf(selectedImage);
+                                    handleImageChange(fullResImages[currentIndex - 1]);
                                 }}
-                                className="pointer-events-auto w-12 h-12 rounded-full bg-black/50 border-2 border-[var(--accent-color)] text-[var(--accent-color)] active:bg-[var(--accent-color)] active:text-black transition-all duration-300 flex items-center justify-center [@media(hover:hover)]:hover:bg-[var(--accent-color)] [@media(hover:hover)]:hover:text-black"
-                                aria-label="Close"
+                                onTouchEnd={(e) => {
+                                    setTimeout(() => e.currentTarget.blur(), 100);
+                                }}
+                                className="absolute left-4 md:left-6 top-1/2 -translate-y-1/2 w-12 h-12 rounded-full bg-black/50 border-2 border-[var(--accent-color)] text-[var(--accent-color)] active:bg-[var(--accent-color)] active:text-black transition-all duration-300 hidden [@media(pointer:fine)]:flex items-center justify-center z-20 [@media(hover:hover)]:hover:bg-[var(--accent-color)] [@media(hover:hover)]:hover:text-black"
+                                aria-label="Previous image"
                             >
-                                <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
-                                    <line x1="4" y1="4" x2="16" y2="16" />
-                                    <line x1="16" y1="4" x2="4" y2="16" />
+                                <svg width="12" height="20" viewBox="0 0 12 20" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                    <polyline points="10,2 2,10 10,18" />
                                 </svg>
                             </button>
+                        )}
+
+                        {/* Next Button */}
+                        {fullResImages.indexOf(selectedImage) < fullResImages.length - 1 && zoomLevel === 1 && (
+                            <button
+                                onClick={(e) => {
+                                    e.stopPropagation();
+                                    e.currentTarget.blur();
+                                    setSlideDirection(1);
+                                    const currentIndex = fullResImages.indexOf(selectedImage);
+                                    handleImageChange(fullResImages[currentIndex + 1]);
+                                }}
+                                onTouchEnd={(e) => {
+                                    setTimeout(() => e.currentTarget.blur(), 100);
+                                }}
+                                className="absolute right-4 md:right-6 top-1/2 -translate-y-1/2 w-12 h-12 rounded-full bg-black/50 border-2 border-[var(--accent-color)] text-[var(--accent-color)] active:bg-[var(--accent-color)] active:text-black transition-all duration-300 hidden [@media(pointer:fine)]:flex items-center justify-center z-20 [@media(hover:hover)]:hover:bg-[var(--accent-color)] [@media(hover:hover)]:hover:text-black"
+                                aria-label="Next image"
+                            >
+                                <svg width="12" height="20" viewBox="0 0 12 20" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                    <polyline points="2,2 10,10 2,18" />
+                                </svg>
+                            </button>
+                        )}
+
+                        {/* Image Container - fills available space with bottom padding for counter */}
+                        <div className="w-full h-full flex flex-col items-center justify-center pb-14 md:pb-12" data-backdrop="true">
+                            <AnimatePresence mode="wait" custom={slideDirection}>
+                                <motion.img
+                                    ref={imageRef}
+                                    key={selectedImage}
+                                    initial={{ opacity: 0 }}
+                                    animate={{ opacity: 1 }}
+                                    exit={{ opacity: 0 }}
+                                    transition={{
+                                        duration: 0.1,
+                                        ease: "easeInOut"
+                                    }}
+                                    src={selectedImage}
+                                    alt="Full size"
+                                    className="max-w-full max-h-[calc(100%-4rem)] min-h-[200px] object-contain rounded-2xl shadow-2xl"
+                                    style={{
+                                        transform: `scale(${zoomLevel}) translate(${panPosition.x / zoomLevel}px, ${panPosition.y / zoomLevel}px)`,
+                                        cursor: zoomLevel > 1 ? (isDragging ? 'grabbing' : 'grab') : 'zoom-in',
+                                        transition: isDragging ? 'none' : 'transform 0.2s ease-out',
+                                        willChange: zoomLevel > 1 ? 'transform' : 'auto'
+                                    }}
+                                    onClick={handleImageClick}
+                                    onLoad={handleImageLoad}
+                                    draggable={false}
+                                />
+                            </AnimatePresence>
                         </div>
 
-                        {/* Main Content - Image & Nav */}
-                        <div className="flex-grow relative w-full flex items-center justify-center min-h-0 z-10" data-backdrop="true">
+                        {/* Image Counter - fixed at bottom center */}
+                        <div className="absolute bottom-4 md:bottom-6 left-1/2 -translate-x-1/2 px-4 py-2 rounded-full bg-black/50 border border-[var(--accent-color)] text-[var(--accent-color)] text-sm font-mono backdrop-blur-sm z-20">
+                            {fullResImages.indexOf(selectedImage) + 1} / {fullResImages.length}
+                        </div>
 
-                            {/* Previous Button */}
-                            {fullResImages.indexOf(selectedImage) > 0 && zoomLevel === 1 && (
-                                <button
-                                    onClick={(e) => {
-                                        e.stopPropagation();
-                                        e.currentTarget.blur();
-                                        setSlideDirection(-1);
-                                        const currentIndex = fullResImages.indexOf(selectedImage);
-                                        handleImageChange(fullResImages[currentIndex - 1]);
-                                    }}
-                                    onTouchEnd={(e) => {
-                                        setTimeout(() => e.currentTarget.blur(), 100);
-                                    }}
-                                    className="absolute left-6 top-1/2 -translate-y-1/2 w-12 h-12 rounded-full bg-black/50 border-2 border-[var(--accent-color)] text-[var(--accent-color)] active:bg-[var(--accent-color)] active:text-black transition-all duration-300 hidden [@media(pointer:fine)]:flex items-center justify-center z-10 [@media(hover:hover)]:hover:bg-[var(--accent-color)] [@media(hover:hover)]:hover:text-black"
-                                    aria-label="Previous image"
-                                >
-                                    <svg width="12" height="20" viewBox="0 0 12 20" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                        <polyline points="10,2 2,10 10,18" />
-                                    </svg>
-                                </button>
-                            )}
-
-                            {/* Next Button */}
-                            {fullResImages.indexOf(selectedImage) < fullResImages.length - 1 && zoomLevel === 1 && (
-                                <button
-                                    onClick={(e) => {
-                                        e.stopPropagation();
-                                        e.currentTarget.blur();
-                                        setSlideDirection(1);
-                                        const currentIndex = fullResImages.indexOf(selectedImage);
-                                        handleImageChange(fullResImages[currentIndex + 1]);
-                                    }}
-                                    onTouchEnd={(e) => {
-                                        setTimeout(() => e.currentTarget.blur(), 100);
-                                    }}
-                                    className="absolute right-6 top-1/2 -translate-y-1/2 w-12 h-12 rounded-full bg-black/50 border-2 border-[var(--accent-color)] text-[var(--accent-color)] active:bg-[var(--accent-color)] active:text-black transition-all duration-300 hidden [@media(pointer:fine)]:flex items-center justify-center z-10 [@media(hover:hover)]:hover:bg-[var(--accent-color)] [@media(hover:hover)]:hover:text-black"
-                                    aria-label="Next image"
-                                >
-                                    <svg width="12" height="20" viewBox="0 0 12 20" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                        <polyline points="2,2 10,10 2,18" />
-                                    </svg>
-                                </button>
-                            )}
-
-                            {/* Image Container */}
-                            <div className="w-full h-full flex items-center justify-center p-2" data-backdrop="true">
-                                <AnimatePresence mode="wait" custom={slideDirection}>
-                                    <motion.img
-                                        ref={imageRef}
-                                        key={selectedImage}
-                                        initial={{ opacity: 0 }}
-                                        animate={{ opacity: 1 }}
-                                        exit={{ opacity: 0 }}
-                                        transition={{
-                                            duration: 0.1,
-                                            ease: "easeInOut"
-                                        }}
-                                        src={selectedImage}
-                                        alt="Full size"
-                                        className="max-w-full max-h-full object-contain rounded-2xl shadow-2xl"
-                                        style={{
-                                            transform: `scale(${zoomLevel}) translate(${panPosition.x / zoomLevel}px, ${panPosition.y / zoomLevel}px)`,
-                                            cursor: zoomLevel > 1 ? (isDragging ? 'grabbing' : 'grab') : 'zoom-in',
-                                            transition: isDragging ? 'none' : 'transform 0.2s ease-out',
-                                            willChange: zoomLevel > 1 ? 'transform' : 'auto'
-                                        }}
-                                        onClick={handleImageClick}
-                                        onLoad={handleImageLoad}
-                                        draggable={false}
-                                    />
-                                </AnimatePresence>
-                                {/* Loading Spinner */}
-                                {imageLoading && (
-                                    <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-50">
-                                        <div className="w-12 h-12 border-4 border-[var(--accent-color)]/30 border-t-[var(--accent-color)] rounded-full animate-spin"></div>
-                                    </div>
-                                )}
+                        {/* Loading Spinner */}
+                        {imageLoading && (
+                            <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-50">
+                                <div className="w-12 h-12 border-4 border-[var(--accent-color)]/30 border-t-[var(--accent-color)] rounded-full animate-spin"></div>
                             </div>
-                        </div>
-
-                        {/* Footer - Counter Area */}
-                        <div className="w-full flex-none min-h-[80px] p-6 flex justify-center items-end z-20 pointer-events-none" data-backdrop="true">
-                            <div className="pointer-events-auto px-4 py-2 rounded-full bg-black/50 border border-[var(--accent-color)] text-[var(--accent-color)] text-sm font-mono backdrop-blur-sm">
-                                {fullResImages.indexOf(selectedImage) + 1} / {fullResImages.length}
-                            </div>
-                        </div>
+                        )}
                     </motion.div>
                 )}
             </AnimatePresence>

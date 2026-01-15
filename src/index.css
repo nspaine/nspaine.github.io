@@ -168,7 +168,7 @@ body {
 
 /* Global Scrollbar Reset */
 /* Desktop Scrollbar (Custom Gold) */
-@media (min-width: 768px) {
+@media (min-width: 480px) {
   ::-webkit-scrollbar {
     width: 14px;
     /* Wider for better clickability */
