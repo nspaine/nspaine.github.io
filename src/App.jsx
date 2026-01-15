@@ -32,16 +32,43 @@ const router = createBrowserRouter([
     children: [
       {
         index: true,
+        loader: async () => {
+          // Check if Home was visited before
+          const visited = JSON.parse(sessionStorage.getItem('visitedPages') || '[]');
+          if (!visited.includes('/')) {
+            // First visit - wait for loader animation
+            await new Promise(resolve => setTimeout(resolve, 2000));
+          }
+          return null;
+        },
         element: <Home />,
       },
       {
         path: "portfolio",
-        loader: () => import('./pages/Portfolio').then(() => null), // Force router to wait for chunk, triggering loading state
+        loader: async () => {
+          // Check if Portfolio was visited before
+          const visited = JSON.parse(sessionStorage.getItem('visitedPages') || '[]');
+          if (!visited.includes('/portfolio')) {
+            // First visit - wait for loader animation
+            await new Promise(resolve => setTimeout(resolve, 2000));
+          }
+          await import('./pages/Portfolio');
+          return null;
+        },
         element: <Portfolio />,
       },
       {
         path: "architecture",
-        loader: () => import('./pages/Architecture').then(() => null), // Force router to wait for chunk, triggering loading state
+        loader: async () => {
+          // Check if Architecture was visited before
+          const visited = JSON.parse(sessionStorage.getItem('visitedPages') || '[]');
+          if (!visited.includes('/architecture')) {
+            // First visit - wait for loader animation
+            await new Promise(resolve => setTimeout(resolve, 2000));
+          }
+          await import('./pages/Architecture');
+          return null;
+        },
         element: <Architecture />,
       },
     ],

@@ -4,8 +4,6 @@ import { Linkedin, Building2, Cpu } from 'lucide-react';
 import Footer from '../components/Layout/Footer';
 import usePageTitle from '../hooks/usePageTitle';
 
-import profileImg from '../assets/profile-pixel.webp';
-
 const Home = () => {
     usePageTitle('Home | Nigel Paine');
     const navigate = useNavigate();
@@ -23,12 +21,10 @@ const Home = () => {
                         {/* Profile Image */}
                         <div className="w-32 h-32 md:w-44 md:h-44 lg:w-48 lg:h-48 mx-auto rounded-full overflow-hidden border-2 border-[var(--accent-color)] mb-3 md:mb-5 shadow-[0_0_30px_rgba(255,215,0,0.3)] bg-neutral-900 flex items-center justify-center transition-all duration-300">
                             <img
-                                src={profileImg}
+                                src="/profile-pixel.webp"
                                 alt="Nigel Paine"
                                 className="w-full h-full object-cover select-none pointer-events-none"
                                 draggable="false"
-                                loading="eager"
-                                decoding="sync"
                             />
                         </div>
 

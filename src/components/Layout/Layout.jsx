@@ -3,7 +3,7 @@ import { useLocation, useNavigation } from 'react-router-dom';
 import CircuitryBackground from '../Background/CircuitryBackground';
 import profileImg from '../../assets/profile-pixel.webp';
 import HomeLoader from '../Loaders/HomeLoader';
-import BinaryLoader from '../Loaders/BinaryLoader';
+import OscilloscopeLoader from '../Loaders/OscilloscopeLoader';
 import ArchitectureLoader from '../Loaders/ArchitectureLoader';
 
 // Export Context for Pages to use
@@ -14,12 +14,38 @@ export const LoaderContext = createContext({
 
 export const useLoader = () => useContext(LoaderContext);
 
+// Helper to check if a page has been visited this session
+const hasVisitedPage = (path) => {
+    try {
+        const visited = JSON.parse(sessionStorage.getItem('visitedPages') || '[]');
+        return visited.includes(path);
+    } catch {
+        return false;
+    }
+};
+
+// Helper to mark a page as visited this session
+const markPageVisited = (path) => {
+    try {
+        const visited = JSON.parse(sessionStorage.getItem('visitedPages') || '[]');
+        if (!visited.includes(path)) {
+            visited.push(path);
+            sessionStorage.setItem('visitedPages', JSON.stringify(visited));
+        }
+    } catch {
+        // Ignore storage errors
+    }
+};
+
 const Layout = ({ children }) => {
     const location = useLocation();
     const navigation = useNavigation();
     const isHomePage = location.pathname === '/';
     const isPortfolio = location.pathname === '/portfolio';
     const isArchitecture = location.pathname === '/architecture';
+
+    // Track if this is the initial page load (initial-loader exists)
+    const hadInitialLoader = React.useRef(!!document.getElementById('initial-loader'));
 
     // State
     const [isReady, setIsReady] = useState(false);
@@ -28,18 +54,19 @@ const Layout = ({ children }) => {
     const [currentPath, setCurrentPath] = useState(location.pathname);
 
     // Asset Loading State 
-    // CRITICAL FIX: Initialize based on route. If on Portfolio OR Home, default to FALSE (Locked).
     const isRoot = location.pathname === '/';
     const isPortPage = location.pathname.includes('/portfolio');
     const isArchPage = location.pathname.includes('/architecture');
-    // Determine initial lock state: Lock if Home OR Portfolio
+
+    // Lock assets for pages that need loading
     const shouldLockInitially = isPortPage || isArchPage || isRoot;
 
     const [areAssetsLoaded, setAreAssetsLoaded] = useState(() => !shouldLockInitially);
     const [minTimePassed, setMinTimePassed] = useState(false);
 
-    // Initial Load Logic
+    // Initial Load Logic - Only runs on initial page load
     useEffect(() => {
+        // This only runs once on mount
         const loadFonts = document.fonts.ready;
         const loadImage = new Promise((resolve) => {
             const img = new Image();
@@ -52,17 +79,11 @@ const Layout = ({ children }) => {
 
         Promise.all([loadFonts, loadImage, minDelay]).then(() => {
             setIsReady(true);
-            // setMinTimePassed(true); // Don't auto-set here on initial load either if we want absolute strictness, 
-            // but for initial load, the "Offline" loader handles early visual.
-            // Let's keep it safe:
             setMinTimePassed(true);
         });
     }, []);
 
     // Timer Start Function (Exposed to Loaders)
-    // Child Loaders call this when they MOUNT and are VISIBLE.
-    // Timer Start Function (Exposed to Loaders)
-    // Child Loaders call this when they MOUNT and are VISIBLE.
     const startMinTimer = React.useCallback((duration = 2000) => {
         setTimeout(() => {
             setMinTimePassed(true);
@@ -70,11 +91,33 @@ const Layout = ({ children }) => {
     }, []);
 
     // Navigation Logic
+    const wasNavigating = React.useRef(false);
+
     useLayoutEffect(() => {
         if (!isReady) return;
 
-        // IMMEDAITE FEEDBACK: If router is transitioning/loading, lock the gate.
-        // This handles cases where lazy loading chunks (Suspense) pauses the location update.
+        // Track when navigation completes
+        if (wasNavigating.current && navigation.state === 'idle') {
+            // Navigation just completed - set timer as passed since route loader handled the delay
+            wasNavigating.current = false;
+            setMinTimePassed(true);
+        }
+
+        // If navigating, check if destination was already visited
+        if (navigation.state === 'loading' && navigation.location) {
+            const destPath = navigation.location.pathname;
+            if (hasVisitedPage(destPath)) {
+                // Skip loader for already-visited pages
+                setShowContent(true);
+                setMinTimePassed(true);
+                setAreAssetsLoaded(true);
+                return;
+            }
+            // Track that we're navigating to a new page
+            wasNavigating.current = true;
+        }
+
+        // IMMEDIATE FEEDBACK: If router is transitioning/loading to NEW page, lock the gate.
         if (navigation.state === 'loading') {
             setShowContent(false);
             setIsFading(false);
@@ -84,13 +127,20 @@ const Layout = ({ children }) => {
         }
 
         if (location.pathname !== currentPath) {
-            // Reset States for Transition
+            // Check if we've already visited this page
+            if (hasVisitedPage(location.pathname)) {
+                setShowContent(true);
+                setMinTimePassed(true);
+                setAreAssetsLoaded(true);
+                setCurrentPath(location.pathname);
+                return;
+            }
+
+            // Reset States for Transition to NEW page
             setShowContent(false);
             setIsFading(false);
-            setMinTimePassed(false);
 
             // Route-Specific Gate Logic
-            // If going to Portfolio OR Home, LOCK the gate (false). Child component must unlock it.
             const nextPathIsPortfolio = location.pathname.includes('/portfolio');
             const nextPathIsArchitecture = location.pathname.includes('/architecture');
             const nextPathIsHome = location.pathname === '/';
@@ -102,16 +152,16 @@ const Layout = ({ children }) => {
             }
 
             setCurrentPath(location.pathname);
-
-            // AUTO-TIMER REMOVED.
-            // Waited for child loader to call startMinTimer()
         }
-    }, [location.pathname, isReady, currentPath, navigation.state]);
+    }, [location.pathname, isReady, currentPath, navigation.state, navigation.location]);
 
     // Unified "Show Content" Trigger
     // Matches: (Timer Completed) AND (Page Assets Loaded)
     useEffect(() => {
         if (isReady && minTimePassed && areAssetsLoaded) {
+            // Mark this page as visited for the session
+            markPageVisited(location.pathname);
+
             // Start Fade Sequence
             // Handle external loader cleanup if it exists (Initial load)
             const externalLoader = document.getElementById('initial-loader');
@@ -128,7 +178,7 @@ const Layout = ({ children }) => {
                 setTimeout(() => setShowContent(true), 500);
             }
         }
-    }, [isReady, minTimePassed, areAssetsLoaded]);
+    }, [isReady, minTimePassed, areAssetsLoaded, location.pathname]);
 
 
     // Determine target path for loader selection
@@ -142,7 +192,7 @@ const Layout = ({ children }) => {
 
     // Determine which loader to show
     let LoaderComponent = HomeLoader;
-    if (isTargetPortfolio) LoaderComponent = BinaryLoader;
+    if (isTargetPortfolio) LoaderComponent = OscilloscopeLoader;
     if (isTargetArchitecture) LoaderComponent = ArchitectureLoader;
 
     return (
@@ -158,11 +208,16 @@ const Layout = ({ children }) => {
                 </main>
 
                 {/* Internal Loading Screen Overlay */}
-                {!showContent && !document.getElementById('initial-loader') && (
-                    <div className={`absolute inset-0 z-[9999] ${isFading ? 'fade-out' : ''}`}>
-                        <LoaderComponent />
-                    </div>
-                )}
+                {(
+                    // Show when navigating to an unvisited page
+                    (navigation.state === 'loading' && navigation.location && !hasVisitedPage(navigation.location.pathname)) ||
+                    // Or when content is not ready and we're past initial load
+                    (!showContent && !document.getElementById('initial-loader'))
+                ) && (
+                        <div className={`absolute inset-0 z-[9999] ${isFading ? 'fade-out' : ''}`}>
+                            <LoaderComponent />
+                        </div>
+                    )}
             </div>
         </LoaderContext.Provider>
     );
