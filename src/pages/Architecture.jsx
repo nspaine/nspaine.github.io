@@ -696,10 +696,10 @@ const Architecture = () => {
         <div className="w-full h-full overflow-y-auto relative scrollbar-custom">
             <div className="px-4 md:px-20 max-w-7xl mx-auto min-h-full relative">
                 {/* Home Button - Matching Portfolio Style */}
-                <div className="sticky top-0 z-50 pt-6 pb-6 w-full flex justify-start md:justify-center pointer-events-none">
+                <div className="sticky top-0 z-50 pt-6 pb-6 w-full flex justify-center pointer-events-none">
                     <button
                         onClick={() => navigate('/')}
-                        className="pointer-events-auto ml-[7px] md:ml-0 p-3 rounded-full bg-black border border-[var(--accent-color)] text-[var(--accent-color)] hover:bg-[var(--accent-color)] hover:text-black transition-all duration-300 hover:scale-110 shadow-[0_0_15px_rgba(255,215,0,0.3)]"
+                        className="pointer-events-auto p-3 rounded-full bg-black border border-[var(--accent-color)] text-[var(--accent-color)] hover:bg-[var(--accent-color)] hover:text-black transition-all duration-300 hover:scale-110 shadow-[0_0_15px_rgba(255,215,0,0.3)]"
                     >
                         <Home size={24} />
                     </button>

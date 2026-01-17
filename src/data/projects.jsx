@@ -1,11 +1,10 @@
 import React from 'react';
-import { ExternalLink, Database, Cpu, Cloud, Globe, Code, Wifi, Terminal, Layout, Share2, PenTool, Activity, FileJson, Monitor, Zap, Calendar1Icon, CalendarDaysIcon, MoveIcon, MicroscopeIcon, CircleDollarSignIcon, PaletteIcon, WavesLadderIcon, CarIcon, WallpaperIcon, CircleGaugeIcon, WaypointsIcon, TwitterIcon, FlameIcon, CpuIcon, ApertureIcon, AudioWaveformIcon, KeyboardMusicIcon } from 'lucide-react';
-
-import profileImg from '../assets/profile-pixel.webp';
+import { Database, Cpu, Wifi, CalendarDaysIcon, MoveIcon, MicroscopeIcon, CircleDollarSignIcon, PaletteIcon, WavesLadderIcon, CircleGaugeIcon, WaypointsIcon, TwitterIcon, FlameIcon, CpuIcon, ApertureIcon, AudioWaveformIcon, KeyboardMusicIcon, WallpaperIcon } from 'lucide-react';
 
 const BASE = import.meta.env.BASE_URL;
 
 const rustImg = `${BASE}images/project_images/rust-network-analyzer.webp`;
+const profileImg = `${BASE}images/project_images/profile.webp`;
 const azureImg = `${BASE}images/project_images/azure-ad-migration.webp`;
 const jiraImg = `${BASE}images/project_images/ms-project-jira.webp`;
 const periscopeImg = `${BASE}images/project_images/periscope-motion.webp`;

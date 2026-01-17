@@ -8,7 +8,6 @@ const CircuitryBackground = () => {
     const containerRef = useRef(null);
     const mouseRef = useRef({ x: -1000, y: -1000, active: false });
     const particlesRef = useRef([]);
-    const imageContextRef = useRef(null);
 
     useEffect(() => {
         // Lock Loader on Mount (regardless of Layout default, just to be safe)
@@ -193,16 +192,6 @@ const CircuitryBackground = () => {
 
         const handleResize = () => {
             init();
-        };
-
-        // Updates position ONLY (Passive)
-        const handlePassiveMove = (x, y) => {
-            mouseRef.current.x = x;
-            mouseRef.current.y = y;
-            if (containerRef.current) {
-                containerRef.current.style.setProperty('--mouse-x', `${x}px`);
-                containerRef.current.style.setProperty('--mouse-y', `${y}px`);
-            }
         };
 
         // Updates position AND triggers particles (Active)

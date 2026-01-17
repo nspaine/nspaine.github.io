@@ -787,24 +787,13 @@ class ImageSorter:
         result = messagebox.askyesno(
             "Confirm Changes",
             f"Rename {len(self.image_widgets)} images with number prefixes?\n\n"
-            "This will rename both full resolution images and thumbnails.\n"
-            "A backup list will be created."
+            "This will rename both full resolution images and thumbnails."
         )
         
         if not result:
             return
         
         try:
-            # Create backup
-            backup_dir = self.image_dir / "_backup_original_names"
-            backup_dir.mkdir(exist_ok=True)
-            
-            backup_file = backup_dir / "original_names.txt"
-            with open(backup_file, 'w') as f:
-                for idx, widget in enumerate(self.image_widgets):
-                    img_file = widget['file']
-                    f.write(f"{idx + 1}. {img_file.name}\n")
-            
             # Helper to clean filename
             def get_clean_name(name):
                 # Remove number prefix if exists (e.g. 01_image.jpg -> image.jpg)
@@ -856,7 +845,7 @@ class ImageSorter:
             
             messagebox.showinfo(
                 "Success",
-                f"Renamed {len(self.image_widgets)} images and thumbnails!\n\nBackup: {backup_file}"
+                f"Renamed {len(self.image_widgets)} images and thumbnails!"
             )
             
             self.root.destroy()

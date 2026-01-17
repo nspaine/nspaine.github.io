@@ -1,10 +1,13 @@
 import React, { useState, useEffect, useLayoutEffect, createContext, useContext } from 'react';
 import { useLocation, useNavigation } from 'react-router-dom';
 import CircuitryBackground from '../Background/CircuitryBackground';
-import profileImg from '../../assets/profile-pixel.webp';
-import HomeLoader from '../Loaders/HomeLoader';
+const profileImg = '/images/project_images/profile.webp';
+import BinaryLoader from '../Loaders/BinaryLoader';
 import OscilloscopeLoader from '../Loaders/OscilloscopeLoader';
 import ArchitectureLoader from '../Loaders/ArchitectureLoader';
+import { LOADER_DURATION as BINARY_DURATION } from '../../loaders/binary-loader';
+import { LOADER_DURATION as SCOPE_DURATION } from '../../loaders/oscilloscope-loader';
+import { LOADER_DURATION as ARCH_DURATION } from '../../loaders/architecture-loader';
 
 // Export Context for Pages to use
 export const LoaderContext = createContext({
@@ -44,9 +47,6 @@ const Layout = ({ children }) => {
     const isPortfolio = location.pathname === '/portfolio';
     const isArchitecture = location.pathname === '/architecture';
 
-    // Track if this is the initial page load (initial-loader exists)
-    const hadInitialLoader = React.useRef(!!document.getElementById('initial-loader'));
-
     // State
     const [isReady, setIsReady] = useState(false);
     const [isFading, setIsFading] = useState(false);
@@ -75,7 +75,17 @@ const Layout = ({ children }) => {
             img.src = profileImg; // Preload profile image
         });
 
-        const minDelay = new Promise((resolve) => setTimeout(resolve, 2000));
+        // Determine which duration to use for the initial page
+        let duration = BINARY_DURATION;
+        if (location.pathname.includes('/portfolio')) duration = SCOPE_DURATION;
+        if (location.pathname.includes('/architecture')) duration = ARCH_DURATION;
+
+        // Account for time already spent in index.html loader
+        const startTime = window.loaderStartTime || Date.now();
+        const elapsed = Date.now() - startTime;
+        const remaining = Math.max(0, duration - elapsed);
+
+        const minDelay = new Promise((resolve) => setTimeout(resolve, remaining));
 
         Promise.all([loadFonts, loadImage, minDelay]).then(() => {
             setIsReady(true);
@@ -84,7 +94,23 @@ const Layout = ({ children }) => {
     }, []);
 
     // Timer Start Function (Exposed to Loaders)
-    const startMinTimer = React.useCallback((duration = 2000) => {
+    // Use a ref for location to keep startMinTimer stable
+    const locationRef = React.useRef(location);
+    React.useEffect(() => {
+        locationRef.current = location;
+    }, [location]);
+
+    // Timer Start Function (Exposed to Loaders)
+    const startMinTimer = React.useCallback((durationOverride) => {
+        // If no override, determine duration from current path
+        let duration = durationOverride;
+        if (duration === undefined) {
+            duration = BINARY_DURATION;
+            const path = locationRef.current.pathname;
+            if (path.includes('/portfolio')) duration = SCOPE_DURATION;
+            if (path.includes('/architecture')) duration = ARCH_DURATION;
+        }
+
         setTimeout(() => {
             setMinTimePassed(true);
         }, duration);
@@ -159,7 +185,8 @@ const Layout = ({ children }) => {
     // Matches: (Timer Completed) AND (Page Assets Loaded)
     useEffect(() => {
         if (isReady && minTimePassed && areAssetsLoaded) {
-            // Mark this page as visited for the session
+            // Check if visited BEFORE marking it
+            const isFirstVisit = !hasVisitedPage(location.pathname);
             markPageVisited(location.pathname);
 
             // Start Fade Sequence
@@ -168,14 +195,24 @@ const Layout = ({ children }) => {
             if (externalLoader) {
                 setIsFading(true);
                 externalLoader.style.opacity = '0';
+
+                // Show content slightly before cleanup for seamless cross-fade
+                setTimeout(() => setShowContent(true), 300);
+
                 setTimeout(() => {
                     externalLoader.remove();
-                    setShowContent(true);
-                }, 500);
-            } else {
-                // Navigation Pulse
+                    setIsFading(false); // Reset so internal loader doesn't block clicks
+                }, 600); // Wait for 0.5s fade + buffer
+            } else if (isFirstVisit) {
+                // Navigation Pulse - Only show if page hasn't been visited!
                 setIsFading(true);
                 setTimeout(() => setShowContent(true), 500);
+                // Reset isFading after animation completes so loader unmounts
+                setTimeout(() => setIsFading(false), 600);
+            } else {
+                // Already visited - show content immediately without loader
+                setShowContent(true);
+                setIsFading(false);
             }
         }
     }, [isReady, minTimePassed, areAssetsLoaded, location.pathname]);
@@ -191,7 +228,7 @@ const Layout = ({ children }) => {
     const isTargetArchitecture = targetPath.includes('/architecture');
 
     // Determine which loader to show
-    let LoaderComponent = HomeLoader;
+    let LoaderComponent = BinaryLoader;
     if (isTargetPortfolio) LoaderComponent = OscilloscopeLoader;
     if (isTargetArchitecture) LoaderComponent = ArchitectureLoader;
 
@@ -209,6 +246,8 @@ const Layout = ({ children }) => {
 
                 {/* Internal Loading Screen Overlay */}
                 {(
+                    // Keep visible while fading out (prevents snap)
+                    isFading ||
                     // Show when navigating to an unvisited page
                     (navigation.state === 'loading' && navigation.location && !hasVisitedPage(navigation.location.pathname)) ||
                     // Or when content is not ready and we're past initial load

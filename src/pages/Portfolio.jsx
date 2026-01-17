@@ -1,5 +1,5 @@
 import React, { useRef, useLayoutEffect } from 'react';
-import { ArrowLeft, Home } from 'lucide-react';
+import { Home } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import CircuitNode from '../components/Portfolio/CircuitNode';
 import { projects } from '../data/projects.jsx';

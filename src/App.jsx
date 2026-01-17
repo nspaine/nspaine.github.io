@@ -3,6 +3,9 @@ import { createBrowserRouter, RouterProvider, Outlet, useRouteError } from 'reac
 import Layout from './components/Layout/Layout';
 import Home from './pages/Home';
 import BinaryLoader from './components/Loaders/BinaryLoader';
+import { LOADER_DURATION as BINARY_DURATION } from './loaders/binary-loader';
+import { LOADER_DURATION as SCOPE_DURATION } from './loaders/oscilloscope-loader';
+import { LOADER_DURATION as ARCH_DURATION } from './loaders/architecture-loader';
 import ErrorFallback from './components/ErrorFallback';
 
 // Wrapper for ErrorFallback to passing router error
@@ -37,7 +40,7 @@ const router = createBrowserRouter([
           const visited = JSON.parse(sessionStorage.getItem('visitedPages') || '[]');
           if (!visited.includes('/')) {
             // First visit - wait for loader animation
-            await new Promise(resolve => setTimeout(resolve, 2000));
+            await new Promise(resolve => setTimeout(resolve, BINARY_DURATION));
           }
           return null;
         },
@@ -50,7 +53,7 @@ const router = createBrowserRouter([
           const visited = JSON.parse(sessionStorage.getItem('visitedPages') || '[]');
           if (!visited.includes('/portfolio')) {
             // First visit - wait for loader animation
-            await new Promise(resolve => setTimeout(resolve, 2000));
+            await new Promise(resolve => setTimeout(resolve, SCOPE_DURATION));
           }
           await import('./pages/Portfolio');
           return null;
@@ -64,7 +67,7 @@ const router = createBrowserRouter([
           const visited = JSON.parse(sessionStorage.getItem('visitedPages') || '[]');
           if (!visited.includes('/architecture')) {
             // First visit - wait for loader animation
-            await new Promise(resolve => setTimeout(resolve, 2000));
+            await new Promise(resolve => setTimeout(resolve, ARCH_DURATION));
           }
           await import('./pages/Architecture');
           return null;
