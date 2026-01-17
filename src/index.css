@@ -285,24 +285,31 @@ body {
 
 /* Oscilloscope Container */
 .oscilloscope-container {
-  width: 80vw;
-  max-width: 28rem;
-  aspect-ratio: 3/2;
-  max-height: 60vh;
+  width: 100vw;
+  max-width: 32rem;
+  aspect-ratio: 16/9;
+  max-height: 70vh;
   position: relative;
   padding: 0 1rem;
 }
 
 @media (min-width: 768px) {
   .oscilloscope-container {
-    width: 50vw;
-    max-width: 36rem;
+    width: 70vw;
+    max-width: 38rem;
   }
 }
 
 @media (min-width: 1024px) {
   .oscilloscope-container {
+    width: 50vw;
     max-width: 40rem;
+  }
+}
+
+@media (min-width: 1536px) {
+  .oscilloscope-container {
+    max-width: 50rem;
   }
 }
 
