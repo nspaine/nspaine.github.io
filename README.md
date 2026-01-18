@@ -7,8 +7,8 @@ A modern, interactive portfolio website showcasing software engineering projects
 ## 🤖 **100% Built with Agentic AI**
 This entire project was conceived, architected, and coded by **Agentic AI** using **Google Antigravity**, an advanced AI-driven IDE. Every line of code, styling decision, and feature implementation was executed through a collaborative session with:
 
-🚀 **Core Engine:** [**Gemini 3 Pro**](https://deepmind.google/technologies/gemini/) (Code Generation, Architecture, & Logic)  
-✨ **Refinement:** [**Claude Opus 4.5**](https://www.anthropic.com/claude) (UI/UX Polishing & Performance Optimization)  
+🚀 **Core Engine:** [**Gemini 3 Pro**](https://deepmind.google/technologies/gemini/) (Code Generation, Architecture, & UI/UX Polishing)  
+✨ **Refinement:** [**Claude Opus 4.5**](https://www.anthropic.com/claude) (Logic & Performance Optimization)  
 
 ---
 
