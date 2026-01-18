@@ -121,7 +121,7 @@ This project is open source and available under the [MIT License](LICENSE).
 This website was developed with assistance from:
 - **Google Antigravity** - Agentic AI IDE
 - **Gemini 3 Pro** - AI model for code generation and architecture
-- **Claude Sonnet 4.5** - AI model for refinement and optimization
+- **Claude Opus 4.5** - AI model for refinement and optimization
 
 ---
 

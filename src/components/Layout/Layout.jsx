@@ -234,7 +234,7 @@ const Layout = ({ children }) => {
 
     return (
         <LoaderContext.Provider value={{ setAreAssetsLoaded, startMinTimer }}>
-            <div className={`h-dvh w-full relative overflow-hidden flex flex-col ${(isHomePage || isPortfolio || isArchitecture) ? 'cursor-probe' : ''}`}>
+            <div className="h-dvh w-full relative overflow-hidden flex flex-col">
 
                 {/* Background */}
                 {(!isPortfolio && !isArchitecture) && <CircuitryBackground />}
