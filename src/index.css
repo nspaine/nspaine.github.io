@@ -35,6 +35,9 @@ body,
   margin: 0;
   padding: 0;
   overflow: hidden;
+  position: fixed;
+  /* Lock everything to the screen */
+  overscroll-behavior: none;
 }
 
 body {
@@ -44,6 +47,10 @@ body {
   user-select: none;
   /* Prevent text highlight on interactive background */
   -webkit-user-select: none;
+  /* Ultimate mobile stability */
+  overscroll-behavior: none;
+  touch-action: none;
+  -webkit-overflow-scrolling: touch;
 }
 
 #root {
@@ -275,6 +282,7 @@ body {
   gap: 2rem;
   z-index: 99999;
   transition: opacity 0.5s ease-out;
+  overflow: hidden;
 }
 
 @media (max-height: 500px) {
@@ -285,12 +293,13 @@ body {
 
 /* Oscilloscope Container */
 .oscilloscope-container {
-  width: 100vw;
+  width: 100%;
   max-width: 32rem;
   aspect-ratio: 16/9;
   max-height: 70vh;
   position: relative;
   padding: 0 1rem;
+  margin: 0 auto;
 }
 
 @media (min-width: 768px) {
@@ -314,14 +323,37 @@ body {
 }
 
 /* Architecture Container */
+/* Architecture Container */
 .architecture-container {
   width: 100%;
-  max-width: 450px;
-  aspect-ratio: 2/1;
-  max-height: 60vh;
+  max-width: 35rem;
+  aspect-ratio: 4/5;
+  /* Taller on mobile to fit city */
+  max-height: 90vh;
   position: relative;
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 0 1rem;
+  padding: 0;
+  margin: 0 auto;
+}
+
+@media (min-width: 768px) {
+  .architecture-container {
+    max-width: 40rem;
+    aspect-ratio: 16/9;
+    /* Landscape for tablets/laptops */
+  }
+}
+
+@media (min-width: 1024px) {
+  .architecture-container {
+    max-width: 65rem;
+  }
+}
+
+@media (min-width: 1536px) {
+  .architecture-container {
+    max-width: 90vw;
+  }
 }

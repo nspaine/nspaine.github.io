@@ -11,7 +11,10 @@ const ArchitectureLoader = () => {
 
         let cleanup = null;
         if (containerRef.current) {
-            cleanup = initArchitectureLoader(containerRef.current);
+            // Only synchronize with initial loader if it's currently visible
+            const isInitialLoad = !!document.getElementById('initial-loader');
+            const initialStartTime = isInitialLoad ? (window.loaderStartTime || null) : null;
+            cleanup = initArchitectureLoader(containerRef.current, initialStartTime);
         }
 
         return () => {

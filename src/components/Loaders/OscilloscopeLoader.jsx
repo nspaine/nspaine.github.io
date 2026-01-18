@@ -12,7 +12,10 @@ const OscilloscopeLoader = () => {
 
         let cleanup = null;
         if (containerRef.current) {
-            cleanup = initOscilloscopeLoader(containerRef.current);
+            // Only synchronize with initial loader if it's currently visible
+            const isInitialLoad = !!document.getElementById('initial-loader');
+            const initialStartTime = isInitialLoad ? (window.loaderStartTime || null) : null;
+            cleanup = initOscilloscopeLoader(containerRef.current, initialStartTime);
         }
 
         return () => {

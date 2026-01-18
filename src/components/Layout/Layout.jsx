@@ -234,7 +234,7 @@ const Layout = ({ children }) => {
 
     return (
         <LoaderContext.Provider value={{ setAreAssetsLoaded, startMinTimer }}>
-            <div className={`h-[100dvh] w-screen relative overflow-hidden flex flex-col ${(isHomePage || isPortfolio || isArchitecture) ? 'cursor-probe' : ''}`}>
+            <div className={`h-dvh w-full relative overflow-hidden flex flex-col ${(isHomePage || isPortfolio || isArchitecture) ? 'cursor-probe' : ''}`}>
 
                 {/* Background */}
                 {(!isPortfolio && !isArchitecture) && <CircuitryBackground />}
@@ -244,14 +244,14 @@ const Layout = ({ children }) => {
                     {children}
                 </main>
 
-                {/* Internal Loading Screen Overlay */}
-                {(
+                {/* Internal Loading Screen Overlay - Only when external loader is gone */}
+                {!document.getElementById('initial-loader') && (
                     // Keep visible while fading out (prevents snap)
                     isFading ||
                     // Show when navigating to an unvisited page
                     (navigation.state === 'loading' && navigation.location && !hasVisitedPage(navigation.location.pathname)) ||
-                    // Or when content is not ready and we're past initial load
-                    (!showContent && !document.getElementById('initial-loader'))
+                    // Or when content is not ready
+                    !showContent
                 ) && (
                         <div className={`absolute inset-0 z-[9999] ${isFading ? 'fade-out' : ''}`}>
                             <LoaderComponent />
