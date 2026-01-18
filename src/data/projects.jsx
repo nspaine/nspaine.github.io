@@ -36,12 +36,12 @@ export const projects = [
     {
         id: "personal-website",
         title: "Personal Website",
-        fullDescription: "Modern portfolio website built entirely with Google Antigravity Agentic AI IDE using Gemini 3 Pro, Claude Opus 4.5, React, Vite, TailwindCSS, Framer Motion, and Canvas API. Features a custom UI/UX, an interactive WebGL circuitry background with particle physics, timeline portfolio, IMMERSIVE architecture gallery, and optimized for performance and mobile/desktop displays.",
-        tech: ["Google Antigravity", "Agentic AI", "Gemini 3 Pro", "Claude Opus 4.5", "React", "Vite", "TailwindCSS", "Framer Motion", "Canvas API"],
+        fullDescription: "Built entirely with Agentic AI using Gemini 3 Pro and Claude Opus 4.5 via the Google Antigravity IDE. This project serves as a demonstration of end-to-end AI-driven development. Features include a high-performance React architecture with stable 'dvh' viewport units, an interactive WebGL circuitry background, synchronized asset loading sequences (HTML to React), and an immersive Architecture gallery with custom-engineered transitions.",
+        tech: ["Google Antigravity", "Gemini 3 Pro", "Claude Opus 4.5", "React 19", "Vite 7", "TailwindCSS", "Canvas API"],
         icon: <WallpaperIcon />,
         image: profileImg,
         link: "",
-        status: "In Progress",
+        status: "Completed",
         year: "2025"
     },
     {

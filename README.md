@@ -2,18 +2,27 @@
 
 A modern, interactive portfolio website showcasing software engineering projects and architectural photography. Built with React, featuring custom animations, interactive backgrounds, and a unique circuit-board aesthetic.
 
-🌐 **Live Site:** [nspaine.github.io](https://nspaine.github.io)
+---
 
-> 🤖 **Built with AI:** Developed using Google Antigravity IDE with Gemini 3 Pro and Claude Sonnet 4.5
+## 🤖 **100% Built with Agentic AI**
+This entire project was conceived, architected, and coded by **Agentic AI** using **Google Antigravity**, an advanced AI-driven IDE. Every line of code, styling decision, and feature implementation was executed through a collaborative session with:
+
+🚀 **Core Engine:** [**Gemini 3 Pro**](https://deepmind.google/technologies/gemini/) (Code Generation, Architecture, & Logic)  
+✨ **Refinement:** [**Claude Opus 4.5**](https://www.anthropic.com/claude) (UI/UX Polishing & Performance Optimization)  
+
+---
 
 ## ✨ Features
 
 - **Interactive Circuit Background**: Dynamic particle system that follows mouse/touch interactions
-- **Project Portfolio**: Expandable project cards with detailed descriptions and tech stacks
-- **Architecture Gallery**: Responsive image gallery with lazy loading and optimized thumbnails
-- **Custom Loaders**: Route-specific loading animations (binary matrix, square wave, skyline)
-- **Mobile-First Design**: Fully responsive with touch-optimized interactions
-- **Performance Optimized**: Code splitting, lazy loading, and optimized asset delivery
+- **Project Portfolio**: Expandable project cards with detailed descriptions, tech stacks, and integrated GitHub icons
+- **Architecture Gallery**: Optimized responsive image gallery with lazy loading, custom lightbox, and smooth transitions
+- **Custom Loaders**: Route-specific loading animations synchronizing initial HTML load with React hydration
+  - **Binary Grid**: Matrix-style animation for the Home page
+  - **Oscilloscope**: Gold wireframe signal wave for the Portfolio page
+  - **Building Architecture**: Dynamic 3D wireframe construction for the Architecture page
+- **Mobile-First Design**: Fully responsive layout using stable `dvh`/`dvw` units to prevent layout jumps on iOS/Android
+- **Performance Optimized**: Code splitting with React Suspense, asset preloading, and SEO-friendly meta-tags
 
 ## 🛠️ Tech Stack
 
@@ -79,11 +88,12 @@ nspaine.github.io/
 ## 🎨 Design Philosophy
 
 The site features a unique circuit-board aesthetic with:
-- **Gold accent color** (#FFD700) throughout
-- **Dark theme** optimized for readability
-- **Custom scrollbar** (desktop only)
-- **Smooth animations** powered by Framer Motion
-- **Interactive elements** that respond to user input
+- **Gold accent color** (#FFD700) throughout for a premium wireframe look
+- **Monochromatic design** for loaders and UI elements to maintain a unified theme
+- **Custom scrollbar** with gold accents and hover effects (desktop only)
+- **Glassmorphism** panels with subtle borders and shadows for depth
+- **Performance-driven transitions** using CSS animations and React's `useLayoutEffect`
+- **Stable Viewport units** (`dvh`) for a reliable experience on mobile browsers
 
 ## 📱 Responsive Design
 
@@ -116,12 +126,14 @@ This project is open source and available under the [MIT License](LICENSE).
 - Website: [nspaine.github.io](https://nspaine.github.io)
 - LinkedIn: [linkedin.com/in/nigel-paine](https://www.linkedin.com/in/nigel-paine/)
 
-## 🤖 Built With AI
+## 🤖 Built Entirely With Agentic AI
 
-This website was developed with assistance from:
-- **Google Antigravity** - Agentic AI IDE
-- **Gemini 3 Pro** - AI model for code generation and architecture
-- **Claude Opus 4.5** - AI model for refinement and optimization
+This website represents a milestone in **Agentic AI coding**, developed using:
+- **Google Antigravity** - The Agentic AI IDE driving the development process.
+- **Gemini 3 Pro** - The primary model used for full-stack architecture, complex logic, and React implementation.
+- **Claude Opus 4.5** - Utilized for advanced UI/UX refinements, micro-animations, and visual polish.
+
+By leveraging these state-of-the-art models, the project demonstrates the future of software engineering where AI agents handle the end-to-end development lifecycle.
 
 ---
 
