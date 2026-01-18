@@ -19,7 +19,7 @@ const Home = () => {
                 <div className="shrink-0 relative z-[100] flex justify-center w-full">
                     <div className="bg-black/70 p-6 [@media(max-height:500px)]:p-3 md:p-8 lg:p-8 rounded-2xl text-center w-full max-w-sm md:max-w-xl lg:max-w-2xl shadow-[0_0_50px_rgba(255,215,0,0.15)] backdrop-blur-sm transition-all duration-300">
                         {/* Profile Image */}
-                        <div className="w-32 h-32 [@media(max-height:500px)]:w-20 [@media(max-height:500px)]:h-20 md:w-44 md:h-44 lg:w-48 lg:h-48 mx-auto rounded-full overflow-hidden border-2 border-[var(--accent-color)] mb-3 [@media(max-height:500px)]:mb-1 md:mb-5 shadow-[0_0_30px_rgba(255,215,0,0.3)] bg-neutral-900 flex items-center justify-center transition-all duration-300">
+                        <div className="w-40 h-40 [@media(max-height:500px)]:w-28 [@media(max-height:500px)]:h-28 md:w-56 md:h-56 lg:w-64 lg:h-64 mx-auto rounded-full overflow-hidden border-2 border-[var(--accent-color)] mb-3 [@media(max-height:500px)]:mb-1 md:mb-5 shadow-[0_0_30px_rgba(255,215,0,0.3)] bg-neutral-900 flex items-center justify-center transition-all duration-300">
                             <img
                                 src="/images/project_images/profile.webp"
                                 alt="Nigel Paine"
