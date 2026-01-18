@@ -44,6 +44,7 @@ const GalleryItem = ({ thumbUrl, fullUrl, index, onSelect }) => {
 
     return (
         <motion.div
+            id={`thumb-${fullUrl.split('/').pop()}`}
             initial={{ opacity: 0 }}
             whileInView={{ opacity: 1 }}
             viewport={{ once: true, margin: "100px" }} // Trigger animation
@@ -88,6 +89,8 @@ const Architecture = () => {
     const panPositionRef = React.useRef({ x: 0, y: 0 });
     const zoomLevelRef = React.useRef(1);
 
+    const lastViewedRef = React.useRef(null);
+
     // Sync refs with state
     useLayoutEffect(() => {
         // Only sync if NOT dragging. During drag, the Ref is the source of truth (updated by handler)
@@ -96,6 +99,27 @@ const Architecture = () => {
             panPositionRef.current = panPosition;
         }
     }, [panPosition]);
+
+    // Track last viewed image to scroll back to it when lightbox closes
+    useLayoutEffect(() => {
+        if (selectedImage) {
+            lastViewedRef.current = selectedImage;
+        }
+    }, [selectedImage]);
+
+    // Scroll back to last viewed image when lightbox closes
+    useLayoutEffect(() => {
+        if (!selectedImage && lastViewedRef.current) {
+            const filename = lastViewedRef.current.split('/').pop();
+            const element = document.getElementById(`thumb-${filename}`);
+            if (element) {
+                // Use a small delay to ensure modal is gone and body scroll is restored if applicable
+                setTimeout(() => {
+                    element.scrollIntoView({ block: 'center', behavior: 'auto' });
+                }, 50);
+            }
+        }
+    }, [selectedImage]);
 
     useLayoutEffect(() => {
         zoomLevelRef.current = zoomLevel;
@@ -281,27 +305,30 @@ const Architecture = () => {
 
     // History state management for lightbox (handles mobile back gesture)
     useLayoutEffect(() => {
-        if (!selectedImage) {
-            lightboxHistoryPushed.current = false;
-            return;
+        // Only push history state once when lightbox first opens
+        if (selectedImage && !lightboxHistoryPushed.current) {
+            window.history.pushState({ lightbox: true }, '');
+            lightboxHistoryPushed.current = true;
         }
 
-        // Push a state when lightbox opens so back gesture closes lightbox, not navigates away
-        window.history.pushState({ lightbox: true }, '');
-        lightboxHistoryPushed.current = true;
+        // Cleanup when lightbox closes (selectedImage becomes null)
+        if (!selectedImage) {
+            lightboxHistoryPushed.current = false;
+        }
+    }, [!!selectedImage]); // Only run when opening or closing, not on image change
 
+    // Separate effect for popstate listener
+    useLayoutEffect(() => {
         const handlePopState = (e) => {
-            // Back gesture or back button was pressed - close lightbox
-            lightboxHistoryPushed.current = false; // History already consumed
-            closeLightbox(true); // true = via back gesture
+            // Back gesture or back button was pressed
+            if (lightboxHistoryPushed.current) {
+                closeLightbox(true); // true = via back gesture
+            }
         };
 
         window.addEventListener('popstate', handlePopState);
-
-        return () => {
-            window.removeEventListener('popstate', handlePopState);
-        };
-    }, [selectedImage, closeLightbox]);
+        return () => window.removeEventListener('popstate', handlePopState);
+    }, [closeLightbox]);
 
     const handleImageChange = (newImage) => {
         // Clear potential pending timer
@@ -751,7 +778,7 @@ const Architecture = () => {
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
                         exit={{ opacity: 0 }}
-                        className="fixed inset-0 z-50 flex items-center justify-center bg-black touch-none select-none p-4 md:p-6"
+                        className="fixed inset-0 z-50 flex items-center justify-center bg-black touch-none select-none p-0 md:p-6"
                         data-lightbox="true"
                         data-backdrop="true"
                         onClick={handleBackdropClick}
@@ -818,8 +845,8 @@ const Architecture = () => {
                         )}
 
                         {/* Image Container - fills available space with bottom padding for counter */}
-                        <div className="w-full h-full flex flex-col items-center justify-center pb-14 md:pb-12" data-backdrop="true">
-                            <AnimatePresence mode="wait" custom={slideDirection}>
+                        <div className="w-full h-full flex flex-col items-center justify-center pb-14 md:pb-12 px-2" data-backdrop="true">
+                            <AnimatePresence mode="popLayout" custom={slideDirection}>
                                 <motion.img
                                     ref={imageRef}
                                     key={selectedImage}
@@ -827,8 +854,8 @@ const Architecture = () => {
                                     animate={{ opacity: 1 }}
                                     exit={{ opacity: 0 }}
                                     transition={{
-                                        duration: 0.1,
-                                        ease: "easeInOut"
+                                        duration: 0.2,
+                                        ease: "easeOut"
                                     }}
                                     src={selectedImage}
                                     alt="Full size"
@@ -846,8 +873,8 @@ const Architecture = () => {
                             </AnimatePresence>
                         </div>
 
-                        {/* Image Counter - fixed at bottom center */}
-                        <div className="absolute bottom-4 md:bottom-6 left-1/2 -translate-x-1/2 px-4 py-2 rounded-full bg-black/50 border border-[var(--accent-color)] text-[var(--accent-color)] text-sm font-mono backdrop-blur-sm z-20">
+                        {/* Image Counter - fixed at bottom center, raised on mobile to avoid nav bar overlap */}
+                        <div className="absolute bottom-10 md:bottom-8 left-1/2 -translate-x-1/2 px-4 py-2 rounded-full bg-black/50 border border-[var(--accent-color)] text-[var(--accent-color)] text-sm font-mono backdrop-blur-sm z-20">
                             {fullResImages.indexOf(selectedImage) + 1} / {fullResImages.length}
                         </div>
 
