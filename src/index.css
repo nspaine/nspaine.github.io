@@ -289,7 +289,7 @@ body {
 
 /* Base Loader Backdrop */
 .loader-backdrop {
-  position: fixed;
+  position: absolute;
   inset: 0;
   background-color: #050505;
   display: flex;
@@ -313,7 +313,7 @@ body {
   width: 100%;
   max-width: 32rem;
   aspect-ratio: 16/9;
-  max-height: 70vh;
+  max-height: 70dvh;
   position: relative;
   padding: 0 1rem;
   margin: 0 auto;
@@ -321,14 +321,14 @@ body {
 
 @media (min-width: 768px) {
   .oscilloscope-container {
-    width: 70vw;
+    width: 70dvw;
     max-width: 38rem;
   }
 }
 
 @media (min-width: 1024px) {
   .oscilloscope-container {
-    width: 50vw;
+    width: 50dvw;
     max-width: 40rem;
   }
 }
@@ -340,13 +340,12 @@ body {
 }
 
 /* Architecture Container */
-/* Architecture Container */
 .architecture-container {
   width: 100%;
   max-width: 35rem;
   aspect-ratio: 4/5;
   /* Taller on mobile to fit city */
-  max-height: 90vh;
+  max-height: 90dvh;
   position: relative;
   display: flex;
   align-items: center;
@@ -371,6 +370,6 @@ body {
 
 @media (min-width: 1536px) {
   .architecture-container {
-    max-width: 90vw;
+    max-width: 90dvw;
   }
 }
