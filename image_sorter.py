@@ -11,6 +11,8 @@ from pathlib import Path
 import tkinter as tk
 from tkinter import ttk, messagebox
 from PIL import Image, ImageTk
+import json
+import re
 
 class ImageSorter:
     def __init__(self, root):
@@ -42,10 +44,26 @@ class ImageSorter:
         self.drag_start_index = None
         self.drag_widget = None
         self.images_loaded = False
-        self.drop_indicator_height = 220  # Default height
+        self.drop_indicator_height = int(200 * 1.15) + 16  # Match frame + padding
         
         self.setup_ui()
+        self.load_metadata()
         self.load_images()
+    
+    def load_metadata(self):
+        """Load existing location metadata from the JS file"""
+        self.metadata_file = Path(__file__).parent / "src" / "data" / "architecture_metadata.js"
+        self.metadata = {}
+        
+        if self.metadata_file.exists():
+            try:
+                content = self.metadata_file.read_text(encoding='utf-8')
+                # Simple regex to extract mapping: "filename": { location: "city" }
+                matches = re.findall(r'"([^"]+)":\s*\{\s*location:\s*"([^"]*)"\s*\}', content)
+                for filename, location in matches:
+                    self.metadata[filename] = location
+            except Exception as e:
+                print(f"Warning: Failed to parse metadata file: {e}")
     
     def setup_ui(self):
         # Title bar
@@ -248,10 +266,11 @@ class ImageSorter:
         # Only update frame sizes (very fast)
         for widget_info in self.image_widgets:
             frame = widget_info['frame']
-            frame.config(width=new_size, height=new_size)
+            # Height is maintained at 1.15x ratio to accommodate text box
+            frame.config(width=new_size, height=int(new_size * 1.15))
         
-        # Update drop indicator height
-        self.drop_indicator_height = new_size + 20
+        # Update drop indicator height to match new frame height + small buffer
+        self.drop_indicator_height = int(new_size * 1.15) + 16
         if hasattr(self, 'drop_indicator'):
             self.drop_indicator.config(height=self.drop_indicator_height)
         
@@ -375,32 +394,11 @@ class ImageSorter:
                 borderwidth=1,
                 cursor="hand2",
                 width=200,
-                height=200
+                height=230
             )
-            frame.grid(row=row, column=col, padx=5, pady=5, sticky="nsew")  # Reduced padding from 10 to 5
+            frame.grid(row=row, column=col, padx=8, pady=8, sticky="nsew")
             frame.grid_propagate(False)  # Prevent frame from resizing
             frame.pack_propagate(False)  # Prevent frame from resizing
-            
-            # Load image safely ensuring file handle is closed
-            try:
-                with Image.open(img_path) as file_img:
-                    file_img.load()  # Force load data
-                    img = file_img.copy()  # Create independent copy
-                
-                # Make another copy for the zoom cache
-                original_img = img.copy()
-                
-                # Resize for thumbnail
-                img.thumbnail((200, 200), Image.Resampling.LANCZOS)
-                photo = ImageTk.PhotoImage(img)
-                
-                img_label = tk.Label(frame, image=photo, bg="white")
-                img_label.image = photo  # Keep a reference
-                img_label.pack(expand=True)
-            except Exception as e:
-                # Fallback
-                img_label = tk.Label(frame, text="Image", bg="white")
-                img_label.pack(expand=True)
             
             # Position number overlay
             pos_label = tk.Label(
@@ -414,10 +412,46 @@ class ImageSorter:
             )
             pos_label.place(x=5, y=5)
             
+            # Location Entry (at the bottom of the frame)
+            # Pack this BEFORE the image to ensure it's visible
+            location_frame = tk.Frame(frame, bg="white")
+            location_frame.pack(side=tk.BOTTOM, fill=tk.X, padx=2, pady=2)
+            
+            # Get existing location
+            existing_location = self.metadata.get(image_file.name, "")
+            
+            loc_entry = tk.Entry(
+                location_frame,
+                font=("Arial", 9),
+                bg="#fcfcfc",
+                relief=tk.SUNKEN,
+                borderwidth=1
+            )
+            loc_entry.insert(0, existing_location)
+            loc_entry.pack(fill=tk.X)
+            
+            # Load image safely after the location frame is packed
+            try:
+                with Image.open(img_path) as file_img:
+                    file_img.load()
+                    img = file_img.copy()
+                
+                original_img = img.copy()
+                img.thumbnail((200, 200), Image.Resampling.LANCZOS)
+                photo = ImageTk.PhotoImage(img)
+                
+                img_label = tk.Label(frame, image=photo, bg="white")
+                img_label.image = photo
+                img_label.pack(expand=True, fill=tk.BOTH)
+            except Exception as e:
+                img_label = tk.Label(frame, text="Image", bg="white")
+                img_label.pack(expand=True)
+            
             # Store widget info (bind events after loading)
             self.image_widgets.append({
                 'frame': frame,
                 'pos_label': pos_label,
+                'loc_entry': loc_entry,
                 'file': image_file,
                 'thumb_file': thumb_file if thumb_file.exists() else None,
                 'original_image': original_img,  # Cache for fast zoom
@@ -458,8 +492,11 @@ class ImageSorter:
         self.root.after(500, cache_positions_and_remove_overlay)
     
     def bind_drag_events(self, widget, index):
-        """Bind drag events to widget and all children"""
-        # Store index on widget for easy lookup (use drag_index to avoid conflicts with built-in index)
+        """Bind drag events to widget and all children, excluding Entries"""
+        if isinstance(widget, tk.Entry):
+            return
+            
+        # Store index on widget for easy lookup
         widget.drag_index = index
         
         widget.bind("<Button-1>", lambda e, i=index: self.start_drag(e, i))
@@ -467,10 +504,7 @@ class ImageSorter:
         widget.bind("<ButtonRelease-1>", lambda e, i=index: self.end_drag(e, i))
         
         for child in widget.winfo_children():
-            child.drag_index = index
-            child.bind("<Button-1>", lambda e, i=index: self.start_drag(e, i))
-            child.bind("<B1-Motion>", lambda e, i=index: self.on_drag(e, i))
-            child.bind("<ButtonRelease-1>", lambda e, i=index: self.end_drag(e, i))
+            self.bind_drag_events(child, index)
     
     def start_drag(self, event, index):
         # Don't allow drag if images are still loading
@@ -778,10 +812,13 @@ class ImageSorter:
             widget['pos_label'].config(text=str(idx + 1))
             
             # Regrid
-            widget['frame'].grid(row=row, column=col, padx=10, pady=10, sticky="nsew")
+            widget['frame'].grid(row=row, column=col, padx=8, pady=8, sticky="nsew")
             
             # Rebind events with new index
             self.bind_drag_events(widget['frame'], idx)
+            
+        # Standardize position caching after grid refresh
+        self.root.after(100, self.recache_positions)
     
     def apply_changes(self):
         result = messagebox.askyesno(
@@ -823,10 +860,10 @@ class ImageSorter:
                 
                 temp_files.append((temp_full, temp_thumb))
             
-            # 2. Rename from temp to final numbered names
+            # 2. Rename from temp to final numbered names and collect new metadata
+            new_metadata = {}
             for idx, (temp_full, temp_thumb) in enumerate(temp_files):
                 # Extract original name (without temp prefix)
-                # _temp_0_filename.jpg
                 original_name_with_prefix = temp_full.name
                 original_base = original_name_with_prefix.replace(f"_temp_{idx}_", "")
                 
@@ -836,6 +873,11 @@ class ImageSorter:
                 # Construct new names
                 new_full_name = self.image_dir / f"{idx + 1:02d}_{final_base_name}"
                 
+                # Get the location from the entry widget
+                location = self.image_widgets[idx]['loc_entry'].get().strip()
+                if location:
+                    new_metadata[new_full_name.name] = location
+                
                 if temp_full.exists():
                     temp_full.rename(new_full_name)
                     
@@ -843,15 +885,41 @@ class ImageSorter:
                     new_thumb_name = self.thumb_dir / f"{idx + 1:02d}_{final_base_name}"
                     temp_thumb.rename(new_thumb_name)
             
+            # 3. Write new metadata JS file
+            self.save_metadata(new_metadata)
+            
             messagebox.showinfo(
                 "Success",
-                f"Renamed {len(self.image_widgets)} images and thumbnails!"
+                f"Renamed {len(self.image_widgets)} images and updated metadata!"
             )
             
             self.root.destroy()
             
         except Exception as e:
-            messagebox.showerror("Error", f"Failed to rename:\n{str(e)}")
+            messagebox.showerror("Error", f"Failed to apply changes:\n{str(e)}")
+
+    def save_metadata(self, metadata_mapping):
+        """Save the updated mapping back to architecture_metadata.js"""
+        try:
+            lines = [
+                "/**",
+                " * Metadata for architecture gallery images.",
+                " * Key: Filename (as it appears in public/images/architecture/)",
+                " * Value: { location: string, description: string (optional) }",
+                " */",
+                "export const architectureMetadata = {"
+            ]
+            
+            # Sort by filename to keep the file clean
+            for filename in sorted(metadata_mapping.keys()):
+                location = metadata_mapping[filename].replace('"', '\\"')
+                lines.append(f'    "{filename}": {{ location: "{location}" }},')
+            
+            lines.append("};")
+            
+            self.metadata_file.write_text("\n".join(lines), encoding='utf-8')
+        except Exception as e:
+            print(f"Error saving metadata: {e}")
 
 if __name__ == "__main__":
     root = tk.Tk()

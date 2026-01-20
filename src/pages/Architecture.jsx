@@ -1,9 +1,10 @@
 import React, { useState, useLayoutEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Home } from 'lucide-react';
+import { Home, MapPin } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useLoader } from '../components/Layout/Layout';
 import Footer from '../components/Layout/Footer';
+import { architectureMetadata } from '../data/architecture_metadata';
 import usePageTitle from '../hooks/usePageTitle';
 
 
@@ -136,6 +137,16 @@ const Architecture = () => {
     const loadingTimeoutRef = React.useRef(null);
     const preloadedMap = React.useRef(new Map());
     const lightboxHistoryPushed = React.useRef(false); // Track if we pushed history for lightbox
+    const dragDistanceRef = React.useRef(0);
+
+    const [showLocation, setShowLocation] = useState(false);
+
+    // Clear imageRef when lightbox closes to avoid stale references
+    useLayoutEffect(() => {
+        if (!selectedImage) {
+            imageRef.current = null;
+        }
+    }, [selectedImage]);
 
     // Helper to close lightbox properly (handles history state)
     const closeLightbox = React.useCallback((viaBackGesture = false) => {
@@ -350,6 +361,9 @@ const Architecture = () => {
         dragDistanceRef.current = 0;
         setIsDragging(false);
 
+        // Reset location reveal
+        setShowLocation(false);
+
         setSelectedImage(newImage);
     };
 
@@ -480,7 +494,6 @@ const Architecture = () => {
 
 
     // Double-tap/click zoom toggle
-    const dragDistanceRef = React.useRef(0);
     const lastTapRef = React.useRef(0);
 
     const handleImageClick = (e) => {
@@ -848,7 +861,7 @@ const Architecture = () => {
                         <div className="w-full h-full flex flex-col items-center justify-center pb-14 md:pb-12 px-2" data-backdrop="true">
                             <AnimatePresence mode="popLayout" custom={slideDirection}>
                                 <motion.img
-                                    ref={imageRef}
+                                    ref={(el) => { if (el) imageRef.current = el; }}
                                     key={selectedImage}
                                     initial={{ opacity: 0 }}
                                     animate={{ opacity: 1 }}
@@ -873,9 +886,81 @@ const Architecture = () => {
                             </AnimatePresence>
                         </div>
 
-                        {/* Image Counter - fixed at bottom center, raised on mobile to avoid nav bar overlap */}
-                        <div className="absolute bottom-10 md:bottom-8 left-1/2 -translate-x-1/2 px-4 py-2 rounded-full bg-black/50 border border-[var(--accent-color)] text-[var(--accent-color)] text-sm font-mono backdrop-blur-sm z-20">
-                            {fullResImages.indexOf(selectedImage) + 1} / {fullResImages.length}
+                        {/* Lightbox UI Chrome (Bottom Bar) */}
+                        <div className="absolute bottom-12 md:bottom-6 left-0 right-0 z-40 flex items-center justify-center px-6 pointer-events-none">
+                            <div className="flex items-center justify-center pointer-events-auto gap-3">
+                                {/* Left Spacer (balanced with pin width to keep numbers dead center) */}
+                                {architectureMetadata[selectedImage.split('/').pop()]?.location && (
+                                    <div className="w-12" />
+                                )}
+
+                                {/* Image Counter (Centered) - Pill shape to match pin height */}
+                                <div className="h-12 px-6 flex items-center justify-center rounded-full bg-black/60 border-2 border-[var(--accent-color)] text-[var(--accent-color)] text-sm font-mono backdrop-blur-md shadow-[0_0_15px_rgba(255,215,0,0.1)]">
+                                    {fullResImages.indexOf(selectedImage) + 1} / {fullResImages.length}
+                                </div>
+
+                                {/* Interactive Location Pin (Immediately to the right) */}
+                                {architectureMetadata[selectedImage.split('/').pop()]?.location && (
+                                    <div className="w-12 flex justify-start">
+                                        <div
+                                            className="relative flex flex-col items-center"
+                                            onMouseEnter={() => setShowLocation(true)}
+                                            onMouseLeave={() => setShowLocation(false)}
+                                        >
+                                            <AnimatePresence>
+                                                {showLocation && (
+                                                    <motion.div
+                                                        key="location-label"
+                                                        initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                                                        animate={{ opacity: 1, y: -56, scale: 1 }}
+                                                        exit={{ opacity: 0, y: 10, scale: 0.95 }}
+                                                        className="absolute z-50 px-4 py-2 rounded-full bg-black/95 border-2 border-[var(--accent-color)] backdrop-blur-xl shadow-[0_10px_30px_rgba(0,0,0,0.9)] flex items-center justify-center"
+                                                    >
+                                                        <span className="text-white text-xs md:text-sm font-medium tracking-wide whitespace-nowrap">
+                                                            {architectureMetadata[selectedImage.split('/').pop()].location}
+                                                        </span>
+                                                        <div className="absolute -bottom-1.5 left-1/2 -translate-x-1/2 w-3 h-3 bg-black/95 border-r-2 border-b-2 border-[var(--accent-color)] rotate-45"></div>
+                                                    </motion.div>
+                                                )}
+                                            </AnimatePresence>
+
+                                            <button
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    setShowLocation(!showLocation);
+                                                }}
+                                                className={`w-12 h-12 rounded-full backdrop-blur-md border-2 border-[var(--accent-color)] flex items-center justify-center transition-all duration-300 shadow-[0_0_15px_rgba(255,215,0,0.1)]
+                                                    ${showLocation ? 'bg-[var(--accent-color)] text-black' : 'bg-black/60 text-[var(--accent-color)] hover:bg-black/80'}
+                                                `}
+                                                aria-label="Toggle location"
+                                            >
+                                                <svg
+                                                    width="18"
+                                                    height="18"
+                                                    viewBox="0 0 24 24"
+                                                    fill="none"
+                                                    stroke="currentColor"
+                                                    strokeWidth="2"
+                                                    strokeLinecap="round"
+                                                    strokeLinejoin="round"
+                                                >
+                                                    <path
+                                                        d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"
+                                                        fill={showLocation ? "black" : "none"}
+                                                    />
+                                                    <circle
+                                                        cx="12"
+                                                        cy="10"
+                                                        r="3"
+                                                        fill={showLocation ? "var(--accent-color)" : "none"}
+                                                        stroke={showLocation ? "black" : "currentColor"}
+                                                    />
+                                                </svg>
+                                            </button>
+                                        </div>
+                                    </div>
+                                )}
+                            </div>
                         </div>
 
                         {/* Loading Spinner */}
@@ -887,7 +972,7 @@ const Architecture = () => {
                     </motion.div>
                 )}
             </AnimatePresence>
-        </div>
+        </div >
     );
 };
 
