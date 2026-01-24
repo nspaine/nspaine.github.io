@@ -52,8 +52,20 @@ const Portfolio = () => {
         preloadImages();
     }, [setAreAssetsLoaded]);
 
+    // Handle Scroll Locking for Game
+    useLayoutEffect(() => {
+        if (isGameOpen) {
+            document.body.classList.add('game-open');
+        } else {
+            document.body.classList.remove('game-open');
+        }
+    }, [isGameOpen]);
+
     return (
-        <div ref={containerRef} className="w-full h-full overflow-y-auto relative scrollbar-custom">
+        <div
+            ref={containerRef}
+            className={`w-full h-full relative scrollbar-custom ${isGameOpen ? 'overflow-hidden' : 'overflow-y-auto'}`}
+        >
             {/* Subtle Tron Grid Background */}
             <div
                 className="fixed inset-0 pointer-events-none z-0"

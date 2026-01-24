@@ -150,6 +150,13 @@ const Architecture = () => {
         if (!selectedImage) {
             imageRef.current = null;
         }
+
+        // Disable scroll when lightbox is open
+        if (selectedImage) {
+            document.body.classList.add('lightbox-open');
+        } else {
+            document.body.classList.remove('lightbox-open');
+        }
     }, [selectedImage]);
 
     // Helper to close lightbox properly (handles history state)
@@ -789,7 +796,10 @@ const Architecture = () => {
     }, [closeLightbox]);
 
     return (
-        <div className="w-full h-full overflow-y-auto relative scrollbar-custom" style={{ scrollbarGutter: 'stable' }}>
+        <div
+            className={`w-full h-full relative scrollbar-custom ${selectedImage ? 'overflow-hidden' : 'overflow-y-auto'}`}
+            style={{ scrollbarGutter: 'stable' }}
+        >
             <div className="px-4 md:px-20 max-w-7xl mx-auto min-h-full relative">
                 {/* Home Button - Matching Portfolio Style */}
                 <div className="sticky top-0 z-50 pt-6 pb-6 w-full flex justify-center pointer-events-none">

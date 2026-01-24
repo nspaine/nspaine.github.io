@@ -370,6 +370,13 @@ const CircuitryBackground = () => {
 
         // Updates position AND triggers particles (Active)
         const handleActiveInteraction = (x, y) => {
+            // Optimization: If a blocking modal (game, lightbox) is open, ignore interaction
+            if (document.body.classList.contains('game-open') ||
+                document.body.classList.contains('lightbox-open')) {
+                mouseRef.current.active = false;
+                return;
+            }
+
             // If blown out, moving the mouse resets the state
             if (mouseRef.current.isBlown && mouseRef.current.lastHoverPos) {
                 const dist = Math.hypot(x - mouseRef.current.lastHoverPos.x, y - mouseRef.current.lastHoverPos.y);
