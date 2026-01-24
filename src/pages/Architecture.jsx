@@ -66,8 +66,8 @@ const GalleryItem = ({ thumbUrl, fullUrl, index, onSelect }) => {
                 />
             )}
 
-            {/* Overlay */}
-            <div className="absolute inset-0 bg-transparent md:bg-black/20 group-hover:bg-black/0 transition-colors duration-500" />
+            {/* Overlay - removed desktop transparency, kept for future use */}
+            <div className="absolute inset-0 bg-transparent transition-colors duration-500" />
 
             {/* Border glow on hover */}
             <div className="absolute inset-0 border-2 border-white/0 group-hover:border-[var(--accent-color)]/30 rounded-xl transition-all duration-300" />
@@ -101,24 +101,22 @@ const Architecture = () => {
         }
     }, [panPosition]);
 
-    // Track last viewed image to scroll back to it when lightbox closes
+    // Track last viewed image and keep background gallery in sync
     useLayoutEffect(() => {
         if (selectedImage) {
             lastViewedRef.current = selectedImage;
-        }
-    }, [selectedImage]);
 
-    // Scroll back to last viewed image when lightbox closes
-    useLayoutEffect(() => {
-        if (!selectedImage && lastViewedRef.current) {
-            const filename = lastViewedRef.current.split('/').pop();
-            const element = document.getElementById(`thumb-${filename}`);
-            if (element) {
-                // Use a small delay to ensure modal is gone and body scroll is restored if applicable
-                setTimeout(() => {
+            // Wait for fade-in to complete before moving the background
+            // This prevents the user from seeing the gallery shift while the lightbox is still transparent
+            const timer = setTimeout(() => {
+                const filename = selectedImage.split('/').pop();
+                const element = document.getElementById(`thumb-${filename}`);
+                if (element) {
                     element.scrollIntoView({ block: 'center', behavior: 'auto' });
-                }, 50);
-            }
+                }
+            }, 300);
+
+            return () => clearTimeout(timer);
         }
     }, [selectedImage]);
 
@@ -139,7 +137,13 @@ const Architecture = () => {
     const lightboxHistoryPushed = React.useRef(false); // Track if we pushed history for lightbox
     const dragDistanceRef = React.useRef(0);
 
-    const [showLocation, setShowLocation] = useState(false);
+    const [isHovered, setIsHovered] = useState(false);
+    const [isToggled, setIsToggled] = useState(false);
+    const showLocation = isHovered || isToggled;
+
+    // Track if current image needs extra padding (tall images that would overlap UI)
+    // Default to true to prevent flash - will be set to false after image loads if not needed
+    const [needsTallPadding, setNeedsTallPadding] = useState(true);
 
     // Clear imageRef when lightbox closes to avoid stale references
     useLayoutEffect(() => {
@@ -176,21 +180,44 @@ const Architecture = () => {
                 touch2.clientY - touch1.clientY
             );
             touchStartRef.current = { distance, zoom: currentZoom };
-        } else if (e.touches.length === 1 && currentZoom > 1) {
-            // Pan Start (merged) - Allow dragging anywhere except buttons
+        } else if (e.touches.length === 1) {
+            // If tapping a button, let the button handle it
             if (e.target.closest('button')) return;
 
-            // console.log('Starting Pan');
-            isDraggingRef.current = true;
-            setIsDragging(true);
-            const touch = e.touches[0];
-            // Calculate start position relative to current pan position
-            // Note: We don't preventDefault here to allow potential clicks (tap to zoom)
-            // Use REF for value to keep handler stable
-            dragStartRef.current = { x: touch.clientX - currentPan.x, y: touch.clientY - currentPan.y };
-            dragDistanceRef.current = 0;
+            // MOBILE DOUBLE-TAP ZOOM DETECTION
+            const now = Date.now();
+            const timeSinceLastTap = now - lastTapRef.current;
+
+            if (timeSinceLastTap < 300 && timeSinceLastTap > 0) {
+                // Double-tap detected
+                e.preventDefault(); // Stop zoom/click emulation
+                if (currentZoom === 1) {
+                    setZoomLevel(2);
+                } else {
+                    setZoomLevel(1);
+                    setPanPosition({ x: 0, y: 0 });
+                }
+                lastTapRef.current = 0;
+                return; // Don't start a pan/drag if we just zoomed
+            }
+            lastTapRef.current = now;
+
+            if (currentZoom > 1) {
+                // Pan Start (merged) - Allow dragging anywhere except buttons
+                if (e.target.closest('button')) return;
+
+                // console.log('Starting Pan');
+                isDraggingRef.current = true;
+                setIsDragging(true);
+                const touch = e.touches[0];
+                // Calculate start position relative to current pan position
+                // Note: We don't preventDefault here to allow potential clicks (tap to zoom)
+                // Use REF for value to keep handler stable
+                dragStartRef.current = { x: touch.clientX - currentPan.x, y: touch.clientY - currentPan.y };
+                dragDistanceRef.current = 0;
+            }
         }
-    }, []); // Zero dependencies!
+    }, [setZoomLevel, setPanPosition]); // Add setters to dependencies
 
     const handleTouchMove = React.useCallback((e) => {
         const currentZoom = zoomLevelRef.current;
@@ -361,8 +388,30 @@ const Architecture = () => {
         dragDistanceRef.current = 0;
         setIsDragging(false);
 
-        // Reset location reveal
-        setShowLocation(false);
+        // Reset location and tap history immediately
+        setIsToggled(false);
+        setIsHovered(false);
+        lastTapRef.current = 0;
+
+        // Pre-calculate needsTallPadding from preloaded image to prevent pop-in resize effect
+        const preloaded = preloadedMap.current.get(newImage);
+        if (preloaded && preloaded.naturalWidth && preloaded.naturalHeight) {
+            const imgAspectRatio = preloaded.naturalWidth / preloaded.naturalHeight;
+            const viewportHeight = window.innerHeight;
+            const viewportWidth = window.innerWidth;
+            const isMobile = viewportWidth < 768;
+
+            const topSafe = isMobile ? 96 : 8;
+            const bottomSafe = isMobile ? 128 : 80;
+            const sideSafe = 8;
+
+            const reservedHeight = topSafe + bottomSafe;
+            const availableHeight = viewportHeight - reservedHeight;
+            const availableWidth = viewportWidth - (sideSafe * 2);
+            const scaledHeight = availableWidth / imgAspectRatio;
+
+            setNeedsTallPadding(scaledHeight > availableHeight);
+        }
 
         setSelectedImage(newImage);
     };
@@ -490,6 +539,31 @@ const Architecture = () => {
             loadingTimeoutRef.current = null;
         }
         setImageLoading(false);
+
+        // Check if image is tall enough to need extra padding
+        const img = event.target;
+        const imgAspectRatio = img.naturalWidth / img.naturalHeight;
+        const viewportHeight = window.innerHeight;
+        const viewportWidth = window.innerWidth;
+        const isMobile = viewportWidth < 768;
+
+        // Calculate actual safe areas based on UI element positions
+        // Mobile: X and counter are centered, need fixed padding
+        // Desktop: X is in corner (top-right), doesn't block centered images
+        // Counter: bottom-6 (24px) + h-12 (48px) + gap = 80px on desktop
+        const topSafe = isMobile ? 96 : 8; // Desktop: just small edge gap since X is in corner
+        const bottomSafe = isMobile ? 128 : 80; // Clear bottom buttons
+        const sideSafe = 8;
+
+        const reservedHeight = topSafe + bottomSafe;
+        const availableHeight = viewportHeight - reservedHeight;
+        const availableWidth = viewportWidth - (sideSafe * 2);
+
+        // Calculate what size the image would be if it filled the available width
+        const scaledHeight = availableWidth / imgAspectRatio;
+
+        // If the scaled height exceeds available space, the image is "tall" and needs padding
+        setNeedsTallPadding(scaledHeight > availableHeight);
     };
 
 
@@ -500,40 +574,22 @@ const Architecture = () => {
         if (e.target.tagName === 'IMG') {
             e.stopPropagation();
 
-            // Don't toggle zoom if user was dragging
-            if (dragDistanceRef.current > 5) {
-                dragDistanceRef.current = 0;
-                return;
-            }
+            // Robustly detect mouse-primary devices
+            const isMousePrimary = window.matchMedia('(pointer: fine)').matches;
 
-            // Robustly detect touch-primary devices using CSS Media Query
-            const isTouchPrimary = window.matchMedia('(pointer: coarse)').matches;
-
-            if (!isTouchPrimary) {
+            if (isMousePrimary) {
                 // Desktop/Mouse: Single click to toggle zoom
+                // Don't toggle zoom if user was dragging
+                if (dragDistanceRef.current > 5) {
+                    dragDistanceRef.current = 0;
+                    return;
+                }
+
                 if (zoomLevel === 1) {
                     setZoomLevel(2);
                 } else {
                     setZoomLevel(1);
                     setPanPosition({ x: 0, y: 0 });
-                }
-            } else {
-                // Mobile/Touch: Double-tap to toggle zoom
-                const now = Date.now();
-                const timeSinceLastTap = now - lastTapRef.current;
-
-                if (timeSinceLastTap < 300 && timeSinceLastTap > 0) {
-                    // Double-tap detected
-                    if (zoomLevel === 1) {
-                        setZoomLevel(2);
-                    } else {
-                        setZoomLevel(1);
-                        setPanPosition({ x: 0, y: 0 });
-                    }
-                    lastTapRef.current = 0; // Reset
-                } else {
-                    // First tap
-                    lastTapRef.current = now;
                 }
             }
         }
@@ -733,13 +789,13 @@ const Architecture = () => {
     }, [closeLightbox]);
 
     return (
-        <div className="w-full h-full overflow-y-auto relative scrollbar-custom">
+        <div className="w-full h-full overflow-y-auto relative scrollbar-custom" style={{ scrollbarGutter: 'stable' }}>
             <div className="px-4 md:px-20 max-w-7xl mx-auto min-h-full relative">
                 {/* Home Button - Matching Portfolio Style */}
                 <div className="sticky top-0 z-50 pt-6 pb-6 w-full flex justify-center pointer-events-none">
                     <button
                         onClick={() => navigate('/')}
-                        className="pointer-events-auto p-3 rounded-full bg-black border border-[var(--accent-color)] text-[var(--accent-color)] hover:bg-[var(--accent-color)] hover:text-black transition-all duration-300 hover:scale-110 shadow-[0_0_15px_rgba(255,215,0,0.3)]"
+                        className="pointer-events-auto p-3 rounded-full bg-black/60 backdrop-blur-md border-2 border-[var(--accent-color)] text-[var(--accent-color)] hover:bg-[var(--accent-color)] hover:text-black transition-all duration-300 hover:scale-110 shadow-[0_0_15px_rgba(255,215,0,0.1)]"
                     >
                         <Home size={24} />
                     </button>
@@ -791,10 +847,9 @@ const Architecture = () => {
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
                         exit={{ opacity: 0 }}
-                        className="fixed inset-0 z-50 flex items-center justify-center bg-black touch-none select-none p-0 md:p-6"
+                        transition={{ duration: 0.2, ease: "easeOut" }}
+                        className="fixed inset-0 z-[100] flex items-center justify-center bg-black backdrop-blur-2xl touch-none select-none p-0 md:p-6"
                         data-lightbox="true"
-                        data-backdrop="true"
-                        onClick={handleBackdropClick}
                         onMouseDown={handleMouseDown}
                         onDragStart={(e) => e.preventDefault()}
                     >
@@ -804,7 +859,12 @@ const Architecture = () => {
                                 e.stopPropagation();
                                 closeLightbox();
                             }}
-                            className="absolute top-4 md:top-6 right-4 md:right-6 w-12 h-12 rounded-full bg-black/50 border-2 border-[var(--accent-color)] text-[var(--accent-color)] active:bg-[var(--accent-color)] active:text-black transition-all duration-300 flex items-center justify-center z-20 [@media(hover:hover)]:hover:bg-[var(--accent-color)] [@media(hover:hover)]:hover:text-black"
+                            onTouchEnd={(e) => {
+                                e.preventDefault(); // Instant response
+                                e.stopPropagation();
+                                closeLightbox();
+                            }}
+                            className="absolute top-4 md:top-6 right-4 md:right-6 w-12 h-12 rounded-full bg-black/60 backdrop-blur-md border-2 border-[var(--accent-color)] text-[var(--accent-color)] active:bg-[var(--accent-color)] active:text-black transition-all duration-300 flex items-center justify-center z-[70] shadow-[0_0_15px_rgba(255,215,0,0.1)] [@media(hover:hover)]:hover:bg-[var(--accent-color)] [@media(hover:hover)]:hover:text-black"
                             aria-label="Close"
                         >
                             <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
@@ -820,13 +880,21 @@ const Architecture = () => {
                                     e.stopPropagation();
                                     e.currentTarget.blur();
                                     setSlideDirection(-1);
+                                    setIsToggled(false);
+                                    setIsHovered(false);
                                     const currentIndex = fullResImages.indexOf(selectedImage);
                                     handleImageChange(fullResImages[currentIndex - 1]);
                                 }}
                                 onTouchEnd={(e) => {
-                                    setTimeout(() => e.currentTarget.blur(), 100);
+                                    e.preventDefault(); // Instant response
+                                    e.stopPropagation();
+                                    setSlideDirection(-1);
+                                    setIsToggled(false);
+                                    setIsHovered(false);
+                                    const currentIndex = fullResImages.indexOf(selectedImage);
+                                    handleImageChange(fullResImages[currentIndex - 1]);
                                 }}
-                                className="absolute left-4 md:left-6 top-1/2 -translate-y-1/2 w-12 h-12 rounded-full bg-black/50 border-2 border-[var(--accent-color)] text-[var(--accent-color)] active:bg-[var(--accent-color)] active:text-black transition-all duration-300 hidden [@media(pointer:fine)]:flex items-center justify-center z-20 [@media(hover:hover)]:hover:bg-[var(--accent-color)] [@media(hover:hover)]:hover:text-black"
+                                className="absolute left-4 md:left-6 top-1/2 -translate-y-1/2 w-12 h-12 rounded-full bg-black/50 border-2 border-[var(--accent-color)] text-[var(--accent-color)] active:bg-[var(--accent-color)] active:text-black transition-all duration-300 hidden [@media(pointer:fine)]:flex items-center justify-center z-[70] [@media(hover:hover)]:hover:bg-[var(--accent-color)] [@media(hover:hover)]:hover:text-black"
                                 aria-label="Previous image"
                             >
                                 <svg width="12" height="20" viewBox="0 0 12 20" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -842,13 +910,21 @@ const Architecture = () => {
                                     e.stopPropagation();
                                     e.currentTarget.blur();
                                     setSlideDirection(1);
+                                    setIsToggled(false);
+                                    setIsHovered(false);
                                     const currentIndex = fullResImages.indexOf(selectedImage);
                                     handleImageChange(fullResImages[currentIndex + 1]);
                                 }}
                                 onTouchEnd={(e) => {
-                                    setTimeout(() => e.currentTarget.blur(), 100);
+                                    e.preventDefault(); // Instant response
+                                    e.stopPropagation();
+                                    setSlideDirection(1);
+                                    setIsToggled(false);
+                                    setIsHovered(false);
+                                    const currentIndex = fullResImages.indexOf(selectedImage);
+                                    handleImageChange(fullResImages[currentIndex + 1]);
                                 }}
-                                className="absolute right-4 md:right-6 top-1/2 -translate-y-1/2 w-12 h-12 rounded-full bg-black/50 border-2 border-[var(--accent-color)] text-[var(--accent-color)] active:bg-[var(--accent-color)] active:text-black transition-all duration-300 hidden [@media(pointer:fine)]:flex items-center justify-center z-20 [@media(hover:hover)]:hover:bg-[var(--accent-color)] [@media(hover:hover)]:hover:text-black"
+                                className="absolute right-4 md:right-6 top-1/2 -translate-y-1/2 w-12 h-12 rounded-full bg-black/50 border-2 border-[var(--accent-color)] text-[var(--accent-color)] active:bg-[var(--accent-color)] active:text-black transition-all duration-300 hidden [@media(pointer:fine)]:flex items-center justify-center z-[70] [@media(hover:hover)]:hover:bg-[var(--accent-color)] [@media(hover:hover)]:hover:text-black"
                                 aria-label="Next image"
                             >
                                 <svg width="12" height="20" viewBox="0 0 12 20" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -857,29 +933,39 @@ const Architecture = () => {
                             </button>
                         )}
 
-                        {/* Image Container - fills available space with bottom padding for counter */}
-                        <div className="w-full h-full flex flex-col items-center justify-center pb-14 md:pb-12 px-2" data-backdrop="true">
-                            <AnimatePresence mode="popLayout" custom={slideDirection}>
+                        {/* Image Container - auto-calculated safe areas */}
+                        <div
+                            className="w-full h-full flex items-center justify-center overflow-hidden"
+                            style={needsTallPadding ? (() => {
+                                // Calculate padding based on actual UI element positions
+                                const isMobile = window.innerWidth < 768;
+                                // Mobile: 96px top, 128px bottom (fixed for centered buttons)
+                                // Desktop: X is in corner, minimize top (8px), clear bottom buttons (80px)
+                                return {
+                                    paddingTop: isMobile ? 96 : 8,
+                                    paddingBottom: isMobile ? 128 : 80,
+                                    paddingLeft: 8,
+                                    paddingRight: 8
+                                };
+                            })() : { padding: 8 }}
+                            onClick={handleImageClick}
+                        >
+                            <AnimatePresence mode="sync" initial={false}>
                                 <motion.img
-                                    ref={(el) => { if (el) imageRef.current = el; }}
                                     key={selectedImage}
-                                    initial={{ opacity: 0 }}
+                                    ref={(el) => { if (el) imageRef.current = el; }}
+                                    initial={false}
                                     animate={{ opacity: 1 }}
                                     exit={{ opacity: 0 }}
-                                    transition={{
-                                        duration: 0.2,
-                                        ease: "easeOut"
-                                    }}
+                                    transition={{ duration: 0 }}
                                     src={selectedImage}
                                     alt="Full size"
-                                    className="max-w-full max-h-[calc(100%-4rem)] min-h-[200px] object-contain rounded-2xl shadow-2xl"
+                                    className="max-w-full max-h-full min-h-[200px] object-contain rounded-2xl shadow-2xl"
                                     style={{
                                         transform: `scale(${zoomLevel}) translate(${panPosition.x / zoomLevel}px, ${panPosition.y / zoomLevel}px)`,
                                         cursor: zoomLevel > 1 ? (isDragging ? 'grabbing' : 'grab') : 'zoom-in',
-                                        transition: isDragging ? 'none' : 'transform 0.2s ease-out',
-                                        willChange: zoomLevel > 1 ? 'transform' : 'auto'
+                                        transition: isDragging ? 'none' : 'transform 0.2s ease-out'
                                     }}
-                                    onClick={handleImageClick}
                                     onLoad={handleImageLoad}
                                     draggable={false}
                                 />
@@ -887,7 +973,7 @@ const Architecture = () => {
                         </div>
 
                         {/* Lightbox UI Chrome (Bottom Bar) */}
-                        <div className="absolute bottom-12 md:bottom-6 left-0 right-0 z-40 flex items-center justify-center px-6 pointer-events-none">
+                        <div className="absolute bottom-12 md:bottom-6 left-0 right-0 z-[60] flex items-center justify-center px-6 pointer-events-none">
                             <div className="flex items-center justify-center pointer-events-auto gap-3">
                                 {/* Left Spacer (balanced with pin width to keep numbers dead center) */}
                                 {architectureMetadata[selectedImage.split('/').pop()]?.location && (
@@ -902,19 +988,15 @@ const Architecture = () => {
                                 {/* Interactive Location Pin (Immediately to the right) */}
                                 {architectureMetadata[selectedImage.split('/').pop()]?.location && (
                                     <div className="w-12 flex justify-start">
-                                        <div
-                                            className="relative flex flex-col items-center"
-                                            onMouseEnter={() => setShowLocation(true)}
-                                            onMouseLeave={() => setShowLocation(false)}
-                                        >
+                                        <div className="relative flex flex-col items-center">
                                             <AnimatePresence>
                                                 {showLocation && (
                                                     <motion.div
-                                                        key="location-label"
+                                                        key={`location-label-${selectedImage.split('/').pop()}`}
                                                         initial={{ opacity: 0, y: 10, scale: 0.95 }}
                                                         animate={{ opacity: 1, y: -56, scale: 1 }}
                                                         exit={{ opacity: 0, y: 10, scale: 0.95 }}
-                                                        className="absolute z-50 px-4 py-2 rounded-full bg-black/95 border-2 border-[var(--accent-color)] backdrop-blur-xl shadow-[0_10px_30px_rgba(0,0,0,0.9)] flex items-center justify-center"
+                                                        className="absolute z-50 px-4 py-2 rounded-full bg-black/95 border-2 border-[var(--accent-color)] backdrop-blur-xl shadow-[0_10px_30px_rgba(0,0,0,0.9)] flex items-center justify-center pointer-events-none"
                                                     >
                                                         <span className="text-white text-xs md:text-sm font-medium tracking-wide whitespace-nowrap">
                                                             {architectureMetadata[selectedImage.split('/').pop()].location}
@@ -923,16 +1005,30 @@ const Architecture = () => {
                                                     </motion.div>
                                                 )}
                                             </AnimatePresence>
-
                                             <button
+                                                onPointerEnter={(e) => {
+                                                    if (e.pointerType === 'mouse') setIsHovered(true);
+                                                }}
+                                                onPointerLeave={(e) => {
+                                                    if (e.pointerType === 'mouse') setIsHovered(false);
+                                                }}
+                                                onPointerDown={(e) => {
+                                                    // Mobile/Touch specific: immediate toggle on down
+                                                    if (e.pointerType !== 'mouse') {
+                                                        e.stopPropagation();
+                                                        e.preventDefault(); // Crucial: stop click emulation and ghost hover
+                                                        setIsToggled(!isToggled);
+                                                    }
+                                                }}
                                                 onClick={(e) => {
                                                     e.stopPropagation();
-                                                    setShowLocation(!showLocation);
+                                                    // Desktop: no toggle on click, hover only
                                                 }}
                                                 className={`w-12 h-12 rounded-full backdrop-blur-md border-2 border-[var(--accent-color)] flex items-center justify-center transition-all duration-300 shadow-[0_0_15px_rgba(255,215,0,0.1)]
                                                     ${showLocation ? 'bg-[var(--accent-color)] text-black' : 'bg-black/60 text-[var(--accent-color)] hover:bg-black/80'}
+                                                    [@media(pointer:fine)]:cursor-default
                                                 `}
-                                                aria-label="Toggle location"
+                                                aria-label="Location"
                                             >
                                                 <svg
                                                     width="18"

@@ -54,15 +54,17 @@ const CircuitNode = ({ project, index, isLast }) => {
                 <div
                     className={`
                         p-6 3xl:p-10 rounded-xl bg-black/90
-                        ${isExpanded ? 'shadow-[0_0_25px_var(--accent-color-dim)]' : 'shadow-[0_0_15px_rgba(0,0,0,0.5)]'}
-                        md:hover:shadow-[0_0_25px_var(--accent-color-dim)]
+                        border border-[var(--accent-color)]/30
+                        ${isExpanded ? 'shadow-[0_0_20px_var(--accent-color-dim)] md:shadow-[0_0_35px_var(--accent-color-glow)] border-[var(--accent-color)]/40 md:border-[var(--accent-color)]/60' : 'shadow-[0_0_15px_rgba(0,0,0,0.5)]'}
+                        md:hover:shadow-[0_0_35px_var(--accent-color-glow)] md:hover:border-[var(--accent-color)]/60
                         transition-[box-shadow,border-color] duration-300 cursor-pointer
                         [contain:paint]
                         overflow-hidden
                     `}
                     onClick={() => setIsExpanded(!isExpanded)}
                     style={{
-                        '--accent-color-dim': 'rgba(255, 215, 0, 0.3)'
+                        '--accent-color-dim': 'rgba(255, 215, 0, 0.3)',
+                        '--accent-color-glow': 'rgba(255, 215, 0, 0.5)'
                     }}
                 >
 
