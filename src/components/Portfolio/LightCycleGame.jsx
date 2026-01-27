@@ -259,10 +259,15 @@ const LightCycleGame = ({ isOpen, onClose }) => {
         // All trails for collision checking
         const allTrails = [trail, ai1Trail, ai2Trail];
 
+        // Active heads for head-to-head collision checking
+        const activeAIHeads = [];
+        if (!ai1.crashed) activeAIHeads.push(ai1);
+        if (!ai2.crashed) activeAIHeads.push(ai2);
+
         // AI1 move
         let newAi1X = ai1.x, newAi1Y = ai1.y;
         if (!ai1.crashed) {
-            const ai1Move = updateAI(ai1, ai1Trail, [trail, ai2Trail], [player, ai2], gridWidth, gridHeight);
+            const ai1Move = updateAI(ai1, ai1Trail, [trail, ai2Trail], [player, ai2.crashed ? null : ai2], gridWidth, gridHeight);
             ai1.dx = ai1Move.dx;
             ai1.dy = ai1Move.dy;
             newAi1X = ai1.x + ai1.dx;
@@ -272,17 +277,17 @@ const LightCycleGame = ({ isOpen, onClose }) => {
         // AI2 move
         let newAi2X = ai2.x, newAi2Y = ai2.y;
         if (!ai2.crashed) {
-            const ai2Move = updateAI(ai2, ai2Trail, [trail, ai1Trail], [player, ai1], gridWidth, gridHeight);
+            const ai2Move = updateAI(ai2, ai2Trail, [trail, ai1Trail], [player, ai1.crashed ? null : ai1], gridWidth, gridHeight);
             ai2.dx = ai2Move.dx;
             ai2.dy = ai2Move.dy;
             newAi2X = ai2.x + ai2.dx;
             newAi2Y = ai2.y + ai2.dy;
         }
 
-        // Check player collision
-        const playerCrashed = checkCollision(newPlayerX, newPlayerY, trail, [ai1Trail, ai2Trail], [ai1, ai2], gridWidth, gridHeight) ||
-            (newPlayerX === newAi1X && newPlayerY === newAi1Y) ||
-            (newPlayerX === newAi2X && newPlayerY === newAi2Y);
+        // Check player collision (only against active heads)
+        const playerCrashed = checkCollision(newPlayerX, newPlayerY, trail, [ai1Trail, ai2Trail], activeAIHeads, gridWidth, gridHeight) ||
+            (!ai1.crashed && newPlayerX === newAi1X && newPlayerY === newAi1Y) ||
+            (!ai2.crashed && newPlayerX === newAi2X && newPlayerY === newAi2Y);
 
         if (playerCrashed) {
             data.crashPosition = { x: newPlayerX, y: newPlayerY };
